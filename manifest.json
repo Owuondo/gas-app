@@ -1,0 +1,15 @@
+{
+  "short_name": "GasApp",
+  "name": "Gas Business Manager",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#ffffff",
+  "theme_color": "#28a745",
+  "display": "standalone"
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gas Business Manager</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { background: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { background: #fff; padding: 10px; margin-bottom: 5px; border-left: 4px solid #28a745; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Record Gas Sale</h2>
+    <input type="text" id="item" placeholder="Item Name (e.g., 6kg Refill)">
+    <input type="number" id="amount" placeholder="Amount (KSh)">
+    <button onclick="saveData()">Save Record</button>
+  </div>
+
+  <div class="card">
+    <h3>Saved Records</h3>
+    <ul id="recordList"></ul>
+  </div>
+
+  <script>
+    // 1. Save data directly inside browser memory (LocalStorage)
+    function saveData() {
+      const item = document.getElementById('item').value;
+      const amount = document.getElementById('amount').value;
+
+      if (!item || !amount) {
+        alert("Please fill in both fields");
+        return;
+      }
+
+      const records = JSON.parse(localStorage.getItem('gas_sales') || '[]');
+      records.push({ item, amount, date: new Date().toLocaleDateString() });
+      localStorage.setItem('gas_sales', JSON.stringify(records));
+
+      document.getElementById('item').value = '';
+      document.getElementById('amount').value = '';
+      loadData();
+    }
+
+    // 2. Load and display saved data
+    function loadData() {
+      const records = JSON.parse(localStorage.getItem('gas_sales') || '[]');
+      const list = document.getElementById('recordList');
+      list.innerHTML = '';
+      records.reverse().forEach(r => {
+        list.innerHTML += `<li><strong>${r.item}</strong> - KSh ${r.amount} <small>(${r.date})</small></li>`;
+      });
+    }
+
+    // Load data on start
+    loadData();
+
+    // 3. Register the offline Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Offline support ready!'))
+        .catch(err => console.log('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>
