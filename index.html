@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>GasPro Gas Shop</title>
-<HTA:APPLICATION ID="GasPro" APPLICATIONNAME="GasPro Gas Shop" BORDER="thin" BORDERSTYLE="normal" CAPTION="yes" MAXIMIZEBUTTON="yes" MINIMIZEBUTTON="yes" SCROLL="auto" SINGLEINSTANCE="yes" SYSMENU="yes" WINDOWSTATE="maximized" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VICTORS'S GAS POINT</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#102f4b">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;width:100%;height:100%;font-family:Segoe UI,Arial,sans-serif;background:#f4f7fa;color:#17324d;overflow:hidden}
@@ -77,73 +78,116 @@ tr:hover td{background:#fafcfd}
 .summaryRow b{display:block;color:#17324d;font-size:14px;margin-top:3px}
 .sectionLine{height:1px;background:#edf2f7;margin:12px 0}
 .empty{text-align:center;padding:25px;color:#7a90a2;font-size:11px}
-.modal{position:absolute;left:0;top:0;right:0;bottom:0;background:#102f4b88;text-align:center;padding-top:55px}
+.modal{position:absolute;left:0;top:0;right:0;bottom:0;background:#102f4b88;text-align:center;padding-top:55px;z-index:999}
 .modalbox{display:inline-block;text-align:left;background:#fff;border-radius:11px;padding:20px;width:460px;max-height:84%;overflow:auto;box-shadow:0 12px 40px #0005}
 .modalbox h2{font-size:17px;margin:0 0 14px}
 .hidden{display:none}
 .notice{padding:10px 12px;border-radius:7px;background:#f7fafc;border:1px solid #e0e7ef;font-size:10px;color:#60798e;margin-bottom:10px}
 
-/* App Bottom Footer */
+/* Responsive fixes for mobile devices */
+@media (max-width: 768px) {
+  .cards, .split, .quick { white-space: normal; }
+  .card, .quick, .split .panel { display: block; width: 100%; margin-right: 0; margin-bottom: 10px; }
+  .field { width: 100%; margin-right: 0; }
+  .summaryRow { display: block; width: 100%; margin-bottom: 8px; }
+}
+
 .pageFooter{height:30px;background:#102f4b;color:#b9c8d6;font-size:10px;display:flex;align-items:center;justify-content:center;border-top:1px solid #0b7a58;flex-shrink:0;letter-spacing:0.3px}
 </style>
-<script language="javascript">
-var dataFile,D,CART=[];
+<script>
+var D, CART=[];
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function money(n){n=Number(n)||0;return 'KSh '+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
 function pad2(n){return n<10?'0'+n:''+n}
 function now(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())}
 function findCustomer(id){var i;for(i=0;i<D.customers.length;i++){if(String(D.customers[i].id)==String(id))return D.customers[i]}return null}
-function loadData(){try{var fso=new ActiveXObject('Scripting.FileSystemObject');var path=location.pathname.replace(/^\//,'').replace(/\//g,'\\');dataFile=fso.BuildPath(fso.GetParentFolderName(path),'gaspro_data.json');if(fso.FileExists(dataFile)){var t=fso.OpenTextFile(dataFile,1,false);D=JSON.parse(t.ReadAll());t.Close()}else{D={products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:'GASPRO GAS SHOP',paybill:'522533',account:'7937345'}}}}catch(e){D={products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:'GASPRO GAS SHOP',paybill:'522533',account:'7937345'}}}}
-function saveData(){try{var fso=new ActiveXObject('Scripting.FileSystemObject');var t=fso.CreateTextFile(dataFile,true);t.Write(JSON.stringify(D));t.Close()}catch(e){alert('Could not save data.\n'+e.message)}}
+
+function loadData(){
+  try {
+    var raw = localStorage.getItem('gaspro_data');
+    if (raw) {
+      D = JSON.parse(raw);
+    } else {
+      D = {products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'}};
+    }
+  } catch(e) {
+    D = {products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'}};
+  }
+  if (!D.settings) D.settings = {business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'};
+}
+
+function saveData(){
+  try {
+    localStorage.setItem('gaspro_data', JSON.stringify(D));
+  } catch(e) {
+    alert('Could not save data locally.\n' + e.message);
+  }
+}
+
 function init(){
- loadData();
- clock();
- setFooterDate();
- dashboard();
+  loadData();
+  clock();
+  setFooterDate();
+  if($('brandText')) $('brandText').innerText = D.settings.business || "VICTORS'S GAS POINT";
+  dashboard();
+  registerServiceWorker();
 }
+
+function registerServiceWorker(){
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function(err){ console.log('SW reg failed: ', err); });
+  }
+}
+
 function setFooterDate(){
- var d=new Date();
- var options={year:'numeric',month:'short',day:'numeric'};
- $('footerDate').innerText=d.toLocaleDateString('en-US',options);
+  var d=new Date();
+  var options={year:'numeric',month:'short',day:'numeric'};
+  $('footerDate').innerText=d.toLocaleDateString('en-US',options);
 }
-function clock(){$('clock').innerText=new Date().toLocaleString();setTimeout(clock,1000)}
+function clock(){if($('clock')) $('clock').innerText=new Date().toLocaleString();setTimeout(clock,1000)}
 function shell(title,sub,html){$('title').innerText=title;$('subtitle').innerText=sub;$('page').innerHTML=html}
 function card(label,value,cls){return '<div class="card"><div class="label">'+label+'</div><div class="value '+(cls||'')+'">'+value+'</div></div>'}
+
 function dashboard(){
- var d=new Date(),day=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()),sales=0,profit=0,cash=0,kcb=0,credit=0,expense=0,debt=0,full=0,empty=0,low=0,i,x,q;
- for(i=0;i<D.sales.length;i++){x=D.sales[i];if(x.dt.substr(0,10)==day){sales+=Number(x.total)||0;profit+=Number(x.profit)||0;cash+=Number(x.cash)||0;kcb+=Number(x.kcb)||0;credit+=Number(x.credit)||0}}
- for(i=0;i<D.expenses.length;i++){x=D.expenses[i];if(x.dt.substr(0,10)==day)expense+=Number(x.amount)||0}
- for(i=0;i<D.customers.length;i++)debt+=Number(D.customers[i].debt)||0;
- for(i=0;i<D.products.length;i++){x=D.products[i];full+=Number(x.full)||0;empty+=Number(x.empty)||0;q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;if(Number(x.low)>0&&q<=Number(x.low))low++}
- var net=profit-expense;
- var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners and grills</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS</div><div class="quickText">Review sales, profit and payments</div></div></div>';
- var stockRows='';for(i=0;i<D.products.length&&i<6;i++){x=D.products[i];q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;stockRows+='<tr><td>'+esc(x.name)+'</td><td>'+esc(x.cat)+'</td><td>'+q+'</td><td>'+status(x)+'</td></tr>'}
- if(!stockRows)stockRows='<tr><td colspan="4" class="empty">No products yet. Add your products in Stock & Products.</td></tr>';
- shell('DASHBOARD','Today at a glance', '<div class="cards">'+card('TODAY SALES',money(sales))+card('TODAY GROSS PROFIT',money(profit),'green')+card('TODAY CASH',money(cash))+card('TODAY KCB PAYBILL',money(kcb))+'</div><div class="cards">'+card('TODAY CREDIT',money(credit),'amber')+card('CUSTOMER DEBT',money(debt),'red')+card('FULL CYLINDERS',full)+card('EMPTY CYLINDERS',empty)+'</div>'+quick+'<div class="split"><div class="panel"><div class="panelTitle">TODAY SUMMARY</div><div class="panelSub">Profit after expenses</div><div class="summary"><div class="summaryRow">SALES<b>'+money(sales)+'</b></div><div class="summaryRow">GROSS PROFIT<b>'+money(profit)+'</b></div><div class="summaryRow">EXPENSES<b>'+money(expense)+'</b></div><div class="summaryRow">NET PROFIT<b>'+money(net)+'</b></div></div></div><div class="panel"><div class="panelTitle">STOCK SNAPSHOT</div><div class="panelSub">Your first six products</div><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr>'+stockRows+'</table></div></div>');
+  var d=new Date(),day=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()),sales=0,profit=0,cash=0,kcb=0,credit=0,expense=0,debt=0,full=0,empty=0,low=0,i,x,q;
+  for(i=0;i<D.sales.length;i++){x=D.sales[i];if(x.dt.substr(0,10)==day){sales+=Number(x.total)||0;profit+=Number(x.profit)||0;cash+=Number(x.cash)||0;kcb+=Number(x.kcb)||0;credit+=Number(x.credit)||0}}
+  for(i=0;i<D.expenses.length;i++){x=D.expenses[i];if(x.dt.substr(0,10)==day)expense+=Number(x.amount)||0}
+  for(i=0;i<D.customers.length;i++)debt+=Number(D.customers[i].debt)||0;
+  for(i=0;i<D.products.length;i++){x=D.products[i];full+=Number(x.full)||0;empty+=Number(x.empty)||0;q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;if(Number(x.low)>0&&q<=Number(x.low))low++}
+  var net=profit-expense;
+  var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners and grills</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS</div><div class="quickText">Review sales, profit and payments</div></div></div>';
+  var stockRows='';for(i=0;i<D.products.length&&i<6;i++){x=D.products[i];q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;stockRows+='<tr><td>'+esc(x.name)+'</td><td>'+esc(x.cat)+'</td><td>'+q+'</td><td>'+status(x)+'</td></tr>'}
+  if(!stockRows)stockRows='<tr><td colspan="4" class="empty">No products yet. Add your products in Stock & Products.</td></tr>';
+  shell('DASHBOARD','Today at a glance', '<div class="cards">'+card('TODAY SALES',money(sales))+card('TODAY GROSS PROFIT',money(profit),'green')+card('TODAY CASH',money(cash))+card('TODAY KCB PAYBILL',money(kcb))+'</div><div class="cards">'+card('TODAY CREDIT',money(credit),'amber')+card('CUSTOMER DEBT',money(debt),'red')+card('FULL CYLINDERS',full)+card('EMPTY CYLINDERS',empty)+'</div>'+quick+'<div class="split"><div class="panel"><div class="panelTitle">TODAY SUMMARY</div><div class="panelSub">Profit after expenses</div><div class="summary"><div class="summaryRow">SALES<b>'+money(sales)+'</b></div><div class="summaryRow">GROSS PROFIT<b>'+money(profit)+'</b></div><div class="summaryRow">EXPENSES<b>'+money(expense)+'</b></div><div class="summaryRow">NET PROFIT<b>'+money(net)+'</b></div></div></div><div class="panel"><div class="panelTitle">STOCK SNAPSHOT</div><div class="panelSub">Your first six products</div><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr>'+stockRows+'</table></div></div>');
 }
+
 function status(p){var q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;return Number(p.low)>0&&q<=Number(p.low)?'<span class="badge bad">LOW STOCK</span>':'<span class="badge ok">IN STOCK</span>'}
+
 function products(){
- var rows='',i,p,q;for(i=0;i<D.products.length;i++){p=D.products[i];q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;rows+='<tr><td>'+esc(p.name)+'</td><td>'+esc(p.cat)+'</td><td>'+money(p.buy)+'</td><td>'+money(p.sell)+'</td><td>'+q+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.full)||0))+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.empty)||0))+'</td><td>'+status(p)+'</td><td><button class="btn small" onclick="editProduct('+i+')">EDIT</button></td></tr>'}
- if(!rows)rows='<tr><td colspan="9" class="empty">No products added yet.</td></tr>';
- shell('STOCK & PRODUCTS','Control your products, prices and physical cylinder stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / ADJUST</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Gas Refill and Complete Gas use FULL / EMPTY cylinder quantities. Regulators, Burners and Grills use normal accessory stock.</div><div class="panel"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAILABLE</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div>')
+  var rows='',i,p,q;for(i=0;i<D.products.length;i++){p=D.products[i];q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;rows+='<tr><td>'+esc(p.name)+'</td><td>'+esc(p.cat)+'</td><td>'+money(p.buy)+'</td><td>'+money(p.sell)+'</td><td>'+q+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.full)||0))+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.empty)||0))+'</td><td>'+status(p)+'</td><td><button class="btn small" onclick="editProduct('+i+')">EDIT</button></td></tr>'}
+  if(!rows)rows='<tr><td colspan="9" class="empty">No products added yet.</td></tr>';
+  shell('STOCK & PRODUCTS','Control your products, prices and physical cylinder stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / ADJUST</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Gas Refill and Complete Gas use FULL / EMPTY cylinder quantities. Regulators, Burners and Grills use normal accessory stock.</div><div class="panel"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAILABLE</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div>')
 }
+
 function addProduct(){productModal(-1)}
 function editProduct(i){productModal(i)}
 function productModal(idx){var p=idx<0?{name:'',cat:'Gas Refill',buy:0,sell:0,stock:0,full:0,empty:0,low:2}:D.products[idx];modal(idx<0?'ADD PRODUCT':'EDIT PRODUCT','<div class="field full"><label>PRODUCT NAME</label><input id="pn" value="'+esc(p.name)+'"></div><div class="field"><label>CATEGORY</label><select id="pc"><option '+(p.cat=='Gas Refill'?'selected':'')+'>Gas Refill</option><option '+(p.cat=='Complete Gas'?'selected':'')+'>Complete Gas</option><option '+(p.cat=='Accessory'?'selected':'')+'>Accessory</option></select></div><div class="field"><label>LOW STOCK LEVEL</label><input id="pl" type="number" value="'+(Number(p.low)||0)+'"></div><div class="field"><label>BUYING PRICE</label><input id="pb" type="number" value="'+(Number(p.buy)||0)+'"></div><div class="field"><label>SELLING PRICE</label><input id="ps" type="number" value="'+(Number(p.sell)||0)+'"></div><div class="field"><label>ACCESSORY STOCK</label><input id="pq" type="number" value="'+(Number(p.stock)||0)+'"></div><div class="field"><label>FULL CYLINDERS</label><input id="pf" type="number" value="'+(Number(p.full)||0)+'"></div><div class="field"><label>EMPTY CYLINDERS</label><input id="pe" type="number" value="'+(Number(p.empty)||0)+'"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveProduct('+idx+')">SAVE PRODUCT</button>')}
 function saveProduct(idx){var p={name:$('pn').value,cat:$('pc').value,buy:+$('pb').value||0,sell:+$('ps').value||0,stock:+$('pq').value||0,full:+$('pf').value||0,empty:+$('pe').value||0,low:+$('pl').value||0};if(!p.name)return alert('Product name is required.');if(p.sell<0||p.buy<0)return alert('Prices cannot be negative.');if(idx<0)D.products.push(p);else D.products[idx]=p;saveData();closeModal();products()}
 function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RESTOCK / ADJUST STOCK','<div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS ADD</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS ADD</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS ADD</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / NOTE</label><input id="rs"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE ADJUSTMENT</button>')}
 function saveRestock(){var p=D.products[+$('ri').value],f=+$('rf').value||0,e=+$('re').value||0,q=+$('rq').value||0,c=+$('rc').value||0;if(f<0||e<0||q<0)return alert('Stock additions cannot be negative.');p.full=(Number(p.full)||0)+f;p.empty=(Number(p.empty)||0)+e;p.stock=(Number(p.stock)||0)+q;if(c>0)p.buy=c;D.restocks.push({dt:now(),product:p.name,full:f,empty:e,stock:q,cost:c,note:$('rs').value});saveData();closeModal();products()}
+
 function customers(){var rows='',i,c;for(i=0;i<D.customers.length;i++){c=D.customers[i];rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td><button class="btn small" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button></td></tr>'}if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div>')}
 function addCustomer(){modal('ADD CUSTOMER','<div class="field full"><label>NAME</label><input id="cn"></div><div class="field"><label>PHONE</label><input id="cp"></div><div class="field"><label>LOCATION</label><input id="cl"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
 function saveCustomer(){var c={id:new Date().getTime(),name:$('cn').value,phone:$('cp').value,location:$('cl').value,debt:0};if(!c.name)return alert('Customer name is required.');D.customers.push(c);saveData();closeModal();customers()}
 function payDebt(id){var c=findCustomer(id);modal('RECEIVE CUSTOMER PAYMENT','<div class="notice"><strong>'+esc(c.name)+'</strong><br>Outstanding debt: <b>'+money(c.debt)+'</b></div><div class="field full"><label>AMOUNT RECEIVED</label><input id="pa" type="number"></div><div class="field"><label>METHOD</label><select id="pm"><option>Cash</option><option>KCB PayBill</option></select></div><div class="field"><label>REFERENCE</label><input id="pr"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="savePayment('+id+')">SAVE PAYMENT</button>')}
 function savePayment(id){var c=findCustomer(id),a=+$('pa').value||0;if(a<=0||a>Number(c.debt))return alert('Enter an amount not greater than the debt.');c.debt-=a;D.sales.push({id:new Date().getTime(),dt:now(),customer:'Debt payment - '+c.name,total:0,profit:0,cash:$('pm').value=='Cash'?a:0,kcb:$('pm').value=='KCB PayBill'?a:0,credit:0,ref:$('pr').value,type:'Debt Payment'});saveData();closeModal();customers()}
+
 function sale(){
- var opts='<option value="-1">Walk-in Customer</option>',pro='',i;if(D.customers.length){for(i=0;i<D.customers.length;i++)opts+='<option value="'+i+'">'+esc(D.customers[i].name)+'</option>'}for(i=0;i<D.products.length;i++)pro+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';
- if(!pro)pro='<option value="-1">No products - add stock first</option>';
- CART=[];
- shell('NEW SALE','Fast POS checkout - Cash - KCB PayBill - Credit','<div class="notice"><strong>Payment rule:</strong> Cash + KCB PayBill + Credit must equal the sale total. KCB PayBill <b>522533</b> | Account <b>7937345</b>.</div><div class="split"><div class="panel"><div class="panelTitle">SALE DETAILS</div><div class="panelSub">Select customer and product</div><div class="field full"><label>CUSTOMER</label><select id="sc">'+opts+'</select></div><div class="field full"><label>PRODUCT</label><select id="sp" onchange="showProductInfo()">'+pro+'</select></div><div class="field"><label>QUANTITY</label><input id="sq" type="number" value="1" min="1" onkeyup="showProductInfo()"></div><div class="field"><label>SELLING PRICE</label><input id="salePrice" type="number" disabled></div><div class="field full"><label>CYLINDER HANDLING</label><select id="returnMode"><option value="none">Accessory / no cylinder exchange</option><option value="returned">Gas refill - customer returns empty</option><option value="notreturned">Gas refill - no empty returned</option><option value="complete">Complete gas - cylinder leaves shop</option></select></div><button class="btn primary" onclick="addCart()">ADD TO SALE</button><button class="btn" onclick="addCustomer()">NEW CUSTOMER</button></div><div class="panel"><div class="panelTitle">PAYMENT</div><div class="panelSub">Enter the payment split</div><div class="field"><label>CASH</label><input id="cash" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>KCB PAYBILL</label><input id="kcb" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>CREDIT</label><input id="cred" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="fieldfull"><label>REFERENCE</label><input id="ref"></div><div class="hint"><b>Customer pays to:</b><br>KCB PayBill: <b>522533</b><br>Account: <b>7937345</b></div><div id="payStatus" class="summary">Payment not yet entered.</div></div></div><div class="panel"><div class="panelTitle">CURRENT SALE</div><div class="panelSub">Review all items before saving</div><div id="cart"><div class="empty">No items added.</div></div><div class="sectionLine"></div><div class="bigTotal" id="stotal">TOTAL KSh 0.00</div><div style="margin-top:10px"><button class="btn primary" onclick="saveSale()">SAVE SALE</button><button class="btn danger" onclick="clearCart()">CLEAR SALE</button></div></div>');showProductInfo()}
+  var opts='<option value="-1">Walk-in Customer</option>',pro='',i;if(D.customers.length){for(i=0;i<D.customers.length;i++)opts+='<option value="'+i+'">'+esc(D.customers[i].name)+'</option>'}for(i=0;i<D.products.length;i++)pro+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';
+  if(!pro)pro='<option value="-1">No products - add stock first</option>';
+  CART=[];
+  shell('NEW SALE','Fast POS checkout - Cash - KCB PayBill - Credit','<div class="notice"><strong>Payment rule:</strong> Cash + KCB PayBill + Credit must equal the sale total. KCB PayBill <b>'+esc(D.settings.paybill)+'</b> | Account <b>'+esc(D.settings.account)+'</b>.</div><div class="split"><div class="panel"><div class="panelTitle">SALE DETAILS</div><div class="panelSub">Select customer and product</div><div class="field full"><label>CUSTOMER</label><select id="sc">'+opts+'</select></div><div class="field full"><label>PRODUCT</label><select id="sp" onchange="showProductInfo()">'+pro+'</select></div><div class="field"><label>QUANTITY</label><input id="sq" type="number" value="1" min="1" onkeyup="showProductInfo()"></div><div class="field"><label>SELLING PRICE</label><input id="salePrice" type="number" disabled></div><div class="field full"><label>CYLINDER HANDLING</label><select id="returnMode"><option value="none">Accessory / no cylinder exchange</option><option value="returned">Gas refill - customer returns empty</option><option value="notreturned">Gas refill - no empty returned</option><option value="complete">Complete gas - cylinder leaves shop</option></select></div><button class="btn primary" onclick="addCart()">ADD TO SALE</button><button class="btn" onclick="addCustomer()">NEW CUSTOMER</button></div><div class="panel"><div class="panelTitle">PAYMENT</div><div class="panelSub">Enter the payment split</div><div class="field"><label>CASH</label><input id="cash" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>KCB PAYBILL</label><input id="kcb" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>CREDIT</label><input id="cred" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field full"><label>REFERENCE</label><input id="ref"></div><div class="hint"><b>Customer pays to:</b><br>KCB PayBill: <b>'+esc(D.settings.paybill)+'</b><br>Account: <b>'+esc(D.settings.account)+'</b></div><div id="payStatus" class="summary">Payment not yet entered.</div></div></div><div class="panel"><div class="panelTitle">CURRENT SALE</div><div class="panelSub">Review all items before saving</div><div id="cart"><div class="empty">No items added.</div></div><div class="sectionLine"></div><div class="bigTotal" id="stotal">TOTAL KSh 0.00</div><div style="margin-top:10px"><button class="btn primary" onclick="saveSale()">SAVE SALE</button><button class="btn danger" onclick="clearCart()">CLEAR SALE</button></div></div>');showProductInfo()}
 function showProductInfo(){var i=+$('sp').value,p=D.products[i],q=+$('sq').value||1;if(!p){if($('salePrice'))$('salePrice').value='';return}if($('salePrice'))$('salePrice').value=(Number(p.sell)||0).toFixed(2);var mode=$('returnMode');if(p.cat=='Accessory')mode.value='none';else if(p.cat=='Complete Gas')mode.value='complete';else mode.value='returned'}
 function addCart(){var i=+$('sp').value,p=D.products[i],q=+$('sq').value||0,mode=$('returnMode').value;if(!p||q<=0)return alert('Select a product and quantity.');if(p.cat=='Accessory'){if(Number(p.stock)<q)return alert('Not enough accessory stock.');mode='none'}else{if(Number(p.full)<q)return alert('Not enough full cylinders available.')}CART.push({p:p,q:q,mode:mode});renderCart()}
 function renderCart(){var html='',total=0,profit=0,i,x,t;if(!CART.length){$('cart').innerHTML='<div class="empty">No items added.</div>';$('stotal').innerText='TOTAL KSh 0.00';updatePaymentStatus();return}html='<table><tr><th>PRODUCT</th><th>QTY</th><th>PRICE</th><th>TOTAL</th><th>HANDLING</th><th>ACTION</th></tr>';for(i=0;i<CART.length;i++){x=CART[i];t=Number(x.p.sell)*x.q;total+=t;profit+=(Number(x.p.sell)-Number(x.p.buy))*x.q;html+='<tr><td>'+esc(x.p.name)+'</td><td>'+x.q+'</td><td>'+money(x.p.sell)+'</td><td>'+money(t)+'</td><td>'+handlingText(x.mode)+'</td><td><button class="btn small danger" onclick="removeCart('+i+')">REMOVE</button></td></tr>'}html+='</table>';$('cart').innerHTML=html;$('stotal').innerText='TOTAL '+money(total);updatePaymentStatus()}
@@ -153,47 +197,64 @@ function clearCart(){CART=[];if($('cart'))renderCart()}
 function cartTotal(){var t=0,i;for(i=0;i<CART.length;i++)t+=Number(CART[i].p.sell)*CART[i].q;return t}
 function updatePaymentStatus(){if(!$('payStatus'))return;var total=cartTotal(),paid=(+$('cash').value||0)+(+$('kcb').value||0)+(+$('cred').value||0),diff=total-paid;if(Math.abs(diff)<0.01)$('payStatus').innerHTML='<b style="color:#087551">PAYMENT COMPLETE</b><br>Total received matches sale total.';else if(diff>0)$('payStatus').innerHTML='<b style="color:#9a6700">BALANCE '+money(diff)+'</b><br>Enter more payment or credit.';else $('payStatus').innerHTML='<b style="color:#b42318">OVERPAYMENT '+money(-diff)+'</b><br>Reduce the payment amounts.'}
 function saveSale(){var total=cartTotal(),profit=0,i,x,cash=+$('cash').value||0,kcb=+$('kcb').value||0,credit=+$('cred').value||0,ci=+$('sc').value,cust=ci>=0?D.customers[ci]:null;if(!CART.length)return alert('Add at least one product.');for(i=0;i<CART.length;i++)profit+=(Number(CART[i].p.sell)-Number(CART[i].p.buy))*CART[i].q;if(Math.round((cash+kcb+credit)*100)!=Math.round(total*100))return alert('Cash + KCB PayBill + Credit must equal '+money(total)+'.');if(credit&&!cust)return alert('Select a customer for credit sales.');for(i=0;i<CART.length;i++){x=CART[i];if(x.p.cat=='Accessory'){x.p.stock-=x.q}else{ x.p.full-=x.q;if(x.mode=='returned')x.p.empty=(Number(x.p.empty)||0)+x.q; }}if(cust&&credit)cust.debt=(Number(cust.debt)||0)+credit;D.sales.push({id:new Date().getTime(),dt:now(),customer:cust?cust.name:'Walk-in Customer',total:total,profit:profit,cash:cash,kcb:kcb,credit:credit,ref:$('ref').value,type:'Sale'});saveData();alert('SALE SAVED\n\nTotal: '+money(total));sale()}
+
 function expenses(){var rows='',i,e;for(i=D.expenses.length-1;i>=0;i--){e=D.expenses[i];rows+='<tr><td>'+e.dt.substr(0,10)+'</td><td>'+esc(e.cat)+'</td><td>'+money(e.amount)+'</td><td>'+esc(e.notes)+'</td></tr>'}if(!rows)rows='<tr><td colspan="4" class="empty">No expenses recorded.</td></tr>';shell('EXPENSES','Record costs and calculate net profit','<div class="panel"><div class="panelTitle">ADD EXPENSE</div><div class="panelSub">Transport, rent, electricity, delivery and other business costs</div><div class="field"><label>CATEGORY</label><select id="ec"><option>Transport</option><option>Rent</option><option>Electricity</option><option>Delivery</option><option>Other</option></select></div><div class="field"><label>AMOUNT</label><input id="ea" type="number"></div><div class="field full"><label>NOTES</label><input id="en"></div><button class="btn primary" onclick="saveExpense()">SAVE EXPENSE</button></div><div class="panel"><table><tr><th>DATE</th><th>CATEGORY</th><th>AMOUNT</th><th>NOTES</th></tr>'+rows+'</table></div>')}
 function saveExpense(){var a=+$('ea').value||0;if(a<=0)return alert('Enter an amount.');D.expenses.push({dt:now(),cat:$('ec').value,amount:a,notes:$('en').value});saveData();expenses()}
+
 function reports(){var total=0,profit=0,exp=0,cash=0,kcb=0,credit=0,i,s,rows='';for(i=0;i<D.sales.length;i++){s=D.sales[i];total+=Number(s.total)||0;profit+=Number(s.profit)||0;cash+=Number(s.cash)||0;kcb+=Number(s.kcb)||0;credit+=Number(s.credit)||0;rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>'}for(i=0;i<D.expenses.length;i++)exp+=Number(D.expenses[i].amount)||0;if(!rows)rows='<tr><td colspan="8" class="empty">No sales recorded yet.</td></tr>';shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="cards">'+card('TOTAL SALES',money(total))+card('GROSS PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT<b>'+money(credit)+'</b></div><div class="summaryRow">TRANSACTIONS<b>'+D.sales.length+'</b></div></div></div><div class="panel"><table><tr><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div>')}
 function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL AMOUNT</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT AMOUNT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>GROSS PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
 function saveEditedSale(idx){var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0;s.customer=$('es_c').value;s.cash=cash;s.kcb=kcb;s.credit=cred;s.total=cash+kcb+cred;s.profit=+$('es_prof').value||0;s.ref=$('es_ref').value;saveData();closeModal();reports()}
 function printSale(idx){
- var s=D.sales[idx];
- var w=window.open('','_blank','width=400,height=550');
- w.document.write('<html><head><title>Receipt</title><style>body{font-family:Courier,monospace;font-size:12px;padding:15px;color:#000}.center{text-align:center}.line{border-bottom:1px dashed #000;margin:8px 0}table{width:100%;font-size:12px}td{padding:2px 0}</style></head><body>');
- w.document.write('<div class="center"><b>'+esc(D.settings.business)+'</b><br>Sales Receipt</div>');
- w.document.write('<div class="line"></div>');
- w.document.write('Date: '+s.dt.substr(0,16).replace('T',' ')+'<br>');
- w.document.write('Customer: '+esc(s.customer)+'<br>');
- if(s.ref)w.document.write('Ref: '+esc(s.ref)+'<br>');
- w.document.write('<div class="line"></div>');
- w.document.write('<table>');
- w.document.write('<tr><td>TOTAL AMOUNT:</td><td align="right"><b>'+money(s.total)+'</b></td></tr>');
- w.document.write('<tr><td>Cash:</td><td align="right">'+money(s.cash)+'</td></tr>');
- w.document.write('<tr><td>KCB PayBill:</td><td align="right">'+money(s.kcb)+'</td></tr>');
- w.document.write('<tr><td>Credit:</td><td align="right">'+money(s.credit)+'</td></tr>');
- w.document.write('</table>');
- w.document.write('<div class="line"></div>');
- w.document.write('<div class="center">Thank you for your business!</div>');
- w.document.write('</body></html>');
- w.document.close();
- w.focus();
- w.print();
- w.close();
+  var s=D.sales[idx];
+  var w=window.open('','_blank','width=400,height=550');
+  w.document.write('<html><head><title>Receipt</title><style>body{font-family:Courier,monospace;font-size:12px;padding:15px;color:#000}.center{text-align:center}.line{border-bottom:1px dashed #000;margin:8px 0}table{width:100%;font-size:12px}td{padding:2px 0}</style></head><body>');
+  w.document.write('<div class="center"><b>'+esc(D.settings.business)+'</b><br>Sales Receipt</div>');
+  w.document.write('<div class="line"></div>');
+  w.document.write('Date: '+s.dt.substr(0,16).replace('T',' ')+'<br>');
+  w.document.write('Customer: '+esc(s.customer)+'<br>');
+  if(s.ref)w.document.write('Ref: '+esc(s.ref)+'<br>');
+  w.document.write('<div class="line"></div>');
+  w.document.write('<table>');
+  w.document.write('<tr><td>TOTAL AMOUNT:</td><td align="right"><b>'+money(s.total)+'</b></td></tr>');
+  w.document.write('<tr><td>Cash:</td><td align="right">'+money(s.cash)+'</td></tr>');
+  w.document.write('<tr><td>KCB PayBill:</td><td align="right">'+money(s.kcb)+'</td></tr>');
+  w.document.write('<tr><td>Credit:</td><td align="right">'+money(s.credit)+'</td></tr>');
+  w.document.write('</table>');
+  w.document.write('<div class="line"></div>');
+  w.document.write('<div class="center">Thank you for your business!</div>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+  w.close();
 }
-function settings(){shell('SETTINGS','Business and payment information','<div class="panel"><div class="panelTitle">BUSINESS DETAILS</div><div class="field full"><label>BUSINESS NAME</label><input id="bn" value="'+esc(D.settings.business)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="bp" value="'+esc(D.settings.paybill)+'"></div><div class="field"><label>KCB ACCOUNT</label><input id="ba" value="'+esc(D.settings.account)+'"></div><button class="btn primary" onclick="saveSettings()">SAVE SETTINGS</button></div><div class="panel"><div class="panelTitle">DATA SAFETY</div><div class="panelSub">Your data is kept offline in gaspro_data.json beside the application.</div><button class="btn" onclick="backup()">BACKUP DATA</button></div>')}
-function saveSettings(){D.settings.business=$('bn').value;D.settings.paybill=$('bp').value;D.settings.account=$('ba').value;saveData();alert('Settings saved.');dashboard()}
-function backup(){try{var fso=new ActiveXObject('Scripting.FileSystemObject'),folder=fso.GetParentFolderName(dataFile),name='gaspro_backup_'+new Date().getTime()+'.json',t=fso.CreateTextFile(fso.BuildPath(folder,name),true);t.Write(JSON.stringify(D));t.Close();alert('Backup created:\n'+name)}catch(e){alert('Backup failed: '+e.message)}}
+
+function settings(){shell('SETTINGS','Business and payment information','<div class="panel"><div class="panelTitle">BUSINESS DETAILS</div><div class="field full"><label>BUSINESS NAME</label><input id="bn" value="'+esc(D.settings.business)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="bp" value="'+esc(D.settings.paybill)+'"></div><div class="field"><label>KCB ACCOUNT</label><input id="ba" value="'+esc(D.settings.account)+'"></div><button class="btn primary" onclick="saveSettings()">SAVE SETTINGS</button></div><div class="panel"><div class="panelTitle">DATA SAFETY</div><div class="panelSub">Export your data to JSON for safe backup.</div><button class="btn" onclick="backup()">BACKUP DATA</button></div>')}
+function saveSettings(){D.settings.business=$('bn').value;D.settings.paybill=$('bp').value;D.settings.account=$('ba').value;saveData();if($('brandText')) $('brandText').innerText = D.settings.business;alert('Settings saved.');dashboard()}
+
+function backup(){
+  try {
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(D));
+    var dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "gaspro_backup_" + new Date().getTime() + ".json");
+    document.body.appendChild(dlAnchorElem);
+    dlAnchorElem.click();
+    dlAnchorElem.remove();
+  } catch(e) {
+    alert('Backup failed: ' + e.message);
+  }
+}
+
 function modal(title,body,buttons){$('modalTitle').innerText=title;$('modalBody').innerHTML=body;$('modalButtons').innerHTML=buttons;$('modal').className='modal'}
-closeModal=function(){$('modal').className='modal hidden'}
+function closeModal(){$('modal').className='modal hidden'}
 </script>
 </head>
 <body onload="init()">
 <div class="app-container">
   <div class="top">
     <div class="logo">GP</div>
-    <div class="brand" id="brand">GASPRO GAS SHOP<div class="sub">Professional gas sales, stock and customer management</div></div>
+    <div class="brand"><span id="brandText">VICTORS'S GAS POINT</span><div class="sub">Professional gas sales, stock and customer management</div></div>
     <div class="clock" id="clock"></div>
   </div>
   
@@ -206,13 +267,12 @@ closeModal=function(){$('modal').className='modal hidden'}
       <button class="navBtn" onclick="customers()">CUSTOMERS & CREDIT</button>
       <button class="navBtn" onclick="expenses()">EXPENSES</button>
       <button class="navBtn" onclick="reports()">REPORTS</button>
-      <div class="sideTitle" style="margin-top:15px">SYSTEM</div>
       <button class="navBtn" onclick="settings()">SETTINGS</button>
       
       <div class="sideBottom">
-        <b>KCB PAYBILL</b>
+        KCB PAYBILL
         <div class="pay">522533</div>
-        Account: <b>7937345</b>
+        ACCOUNT: 7937345
       </div>
     </div>
     
@@ -221,20 +281,20 @@ closeModal=function(){$('modal').className='modal hidden'}
         <h1 id="title">DASHBOARD</h1>
         <p id="subtitle">Today at a glance</p>
       </div>
-      <div id="page" class="page"></div>
+      <div class="page" id="page"></div>
     </div>
   </div>
-
+  
   <div class="pageFooter">
-    System built by Kowuondo Tech &nbsp;|&nbsp; <span id="footerDate"></span>
+    VICTORS'S GAS POINT &nbsp;|&nbsp; <span id="footerDate"></span>
   </div>
 </div>
 
 <div id="modal" class="modal hidden">
   <div class="modalbox">
-    <h2 id="modalTitle"></h2>
+    <h2 id="modalTitle">Modal</h2>
     <div id="modalBody"></div>
-    <div style="margin-top:18px;text-align:right" id="modalButtons"></div>
+    <div id="modalButtons" style="margin-top:15px;text-align:right"></div>
   </div>
 </div>
 </body>
