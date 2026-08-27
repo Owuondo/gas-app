@@ -6,90 +6,97 @@
 <title>VICTORS'S GAS POINT</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;width:100%;height:100%;font-family:Segoe UI,Arial,sans-serif;background:#f4f7fa;color:#17324d;overflow:hidden}
-.app-container{display:flex;flex-direction:column;height:100vh;width:100vw}
+html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:Segoe UI,Arial,sans-serif;background:#f4f7fa;color:#17324d}
+.app-container{display:flex;flex-direction:column;min-height:100vh;width:100%}
 
-.top{height:70px;background:#102f4b;color:#fff;border-bottom:3px solid #0b7a58;padding:0 22px;position:relative;white-space:nowrap;flex-shrink:0}
-.logo{display:inline-block;width:42px;height:42px;line-height:42px;text-align:center;background:#0b7a58;border-radius:9px;margin:12px 11px 0 0;font-size:16px;font-weight:800;vertical-align:top}
-.brand{display:inline-block;font-size:20px;font-weight:800;margin-top:9px;vertical-align:top}
-.sub{font-size:10px;color:#b9c8d6;font-weight:400;margin-top:2px}
-.clock{position:absolute;right:22px;top:25px;font-size:11px;color:#dce6ee}
+.top{height:auto;min-height:60px;background:#102f4b;color:#fff;border-bottom:3px solid #0b7a58;padding:10px 15px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand-group{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;line-height:38px;text-align:center;background:#0b7a58;border-radius:8px;font-size:15px;font-weight:800;flex-shrink:0}
+.brand{font-size:16px;font-weight:800;line-height:1.2}
+.sub{font-size:10px;color:#b9c8d6;font-weight:400}
+.top-right{display:flex;align-items:center;gap:12px}
+.clock{font-size:11px;color:#dce6ee}
+.menu-toggle{display:none;background:#0b7a58;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:800;cursor:pointer;font-size:13px}
 
-.layout{flex:1;display:flex;overflow:hidden;min-height:0}
-.sidebar{width:190px;background:#fff;border-right:1px solid #d8e1ea;padding:13px 10px;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.layout{flex:1;display:flex;width:100%}
+.sidebar{width:220px;background:#fff;border-right:1px solid #d8e1ea;padding:15px 10px;display:flex;flex-direction:column;flex-shrink:0}
 .sideTitle{font-size:9px;font-weight:800;color:#8397aa;letter-spacing:1px;padding:5px 10px 8px}
-.navBtn{display:block;width:100%;height:41px;border:0;background:#fff;color:#36516a;text-align:left;padding:0 12px;margin:3px 0;border-radius:7px;font-size:11px;font-weight:800;cursor:pointer}
+.navBtn{display:block;width:100%;height:40px;border:0;background:#fff;color:#36516a;text-align:left;padding:0 12px;margin:3px 0;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer}
 .navBtn:hover{background:#edf7f3;color:#087551}
 .navBtn.active{background:#e4f4ee;color:#087551;border-left:4px solid #087551;padding-left:8px}
 .sideBottom{margin-top:auto;background:#f5f8fb;border:1px solid #dce5ec;border-radius:8px;padding:10px;font-size:10px;color:#627d98}
-.sideBottom .pay{font-size:17px;color:#087551;font-weight:800;margin:2px 0}
+.sideBottom .pay{font-size:16px;color:#087551;font-weight:800;margin:2px 0}
 
-.main{flex:1;min-width:0;background:#f4f7fa;display:flex;flex-direction:column;overflow:hidden}
-.pageHead{height:68px;padding:16px 22px 8px;border-bottom:1px solid #e0e7ef;flex-shrink:0}
-.pageHead h1{margin:0;font-size:19px}
-.pageHead p{margin:3px 0 0;font-size:10px;color:#6d8498}
-.page{flex:1;padding:16px 20px;overflow:auto}
+.main{flex:1;min-width:0;background:#f4f7fa;display:flex;flex-direction:column}
+.pageHead{padding:15px 20px 10px;border-bottom:1px solid #e0e7ef}
+.pageHead h1{margin:0;font-size:18px}
+.pageHead p{margin:3px 0 0;font-size:11px;color:#6d8498}
+.page{flex:1;padding:15px 20px}
 
-.cards{white-space:nowrap;margin-bottom:13px}
-.card{display:inline-block;width:24.15%;margin-right:1.05%;vertical-align:top;background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:13px 14px;box-shadow:0 2px 7px rgba(23,50,77,.05)}
-.card:last-child{margin-right:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:15px}
+.card{background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:12px 14px;box-shadow:0 2px 7px rgba(23,50,77,.04)}
 .label{font-size:9px;font-weight:800;color:#72889a;letter-spacing:.4px}
 .value{font-size:18px;font-weight:800;margin-top:6px}
 .green{color:#087551}.red{color:#b42318}.amber{color:#9a6700}
 
-.panel{background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:15px;margin-bottom:13px;box-shadow:0 2px 7px rgba(23,50,77,.04)}
+.panel{background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 7px rgba(23,50,77,.04)}
 .panelTitle{font-size:13px;font-weight:800}
 .panelSub{font-size:10px;color:#74899b;margin:3px 0 12px}
-.split{width:100%;overflow:hidden}
-.split .panel{display:inline-block;width:49%;vertical-align:top;margin-right:1.5%}
-.split .panel:last-child{margin-right:0}
-.field{display:inline-block;vertical-align:top;width:48.7%;margin:0 1.3% 9px 0}
-.field:nth-child(even){margin-right:0}
-.field.full{width:100%;margin-right:0}
+
+.split{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:15px;margin-bottom:15px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px;margin-bottom:10px}
+.field{margin-bottom:5px}
+.field.full{grid-column:1 / -1}
 label{display:block;font-size:10px;font-weight:800;color:#486581;margin-bottom:4px}
-input,select{width:100%;height:35px;padding:7px 9px;border:1px solid #bcccdc;border-radius:6px;font-family:Segoe UI,Arial,sans-serif;font-size:12px;background:#fff;color:#17324d}
+input,select{width:100%;height:38px;padding:7px 9px;border:1px solid #bcccdc;border-radius:6px;font-family:Segoe UI,Arial,sans-serif;font-size:12px;background:#fff;color:#17324d}
 input:focus,select:focus{border-color:#0b7a58;outline:none}
 
-.btn{display:inline-block;border:1px solid #cbd5e1;background:#fff;color:#17324d;border-radius:6px;padding:9px 13px;margin:0 4px 3px 0;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn{display:inline-block;border:1px solid #cbd5e1;background:#fff;color:#17324d;border-radius:6px;padding:9px 13px;margin:0 4px 4px 0;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .btn:hover{background:#edf7f3}
 .primary{background:#0b7a58!important;color:#fff!important;border-color:#0b7a58!important}
 .danger{background:#b42318!important;color:#fff!important;border-color:#b42318!important}
-.small{padding:6px 9px;font-size:9px}
-.toolbar{margin-bottom:10px;white-space:nowrap}
+.small{padding:5px 8px;font-size:10px}
+.toolbar{margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px}
 
-table{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
-th{background:#f0f4f7;text-align:left;font-size:9px;padding:9px 8px;border-bottom:1px solid #cbd5e1;color:#3b566d}
-td{padding:9px 8px;border-bottom:1px solid #edf2f7;font-size:10px;word-wrap:break-word;overflow:hidden}
+.table-responsive{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px;border:1px solid #edf2f7;border-radius:6px}
+table{width:100%;border-collapse:collapse;min-width:550px;background:#fff}
+th{background:#f0f4f7;text-align:left;font-size:9px;padding:10px 8px;border-bottom:1px solid #cbd5e1;color:#3b566d}
+td{padding:9px 8px;border-bottom:1px solid #edf2f7;font-size:11px;word-break:normal}
 tr:hover td{background:#fafcfd}
-.badge{display:inline-block;padding:4px 7px;border-radius:10px;font-size:9px;font-weight:800}
+.badge{display:inline-block;padding:3px 6px;border-radius:8px;font-size:9px;font-weight:800}
 .ok{background:#e3f8f0;color:#087551}.bad{background:#fde8e7;color:#b42318}
 
-.quick{display:inline-block;width:31.8%;margin-right:1.5%;vertical-align:top;background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:15px;cursor:pointer}
-.quick:last-child{margin-right:0}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px}
+.quick{background:#fff;border:1px solid #dce5ec;border-radius:10px;padding:12px;cursor:pointer}
 .quick:hover{border-color:#0b7a58;background:#fbfefd}
 .quickTitle{font-size:12px;font-weight:800}
 .quickText{font-size:10px;color:#71879b;margin-top:4px}
-.hint{background:#eef8f4;border:1px solid #d5eee5;border-radius:7px;padding:10px;font-size:10px;color:#356859;margin-top:8px}
-.bigTotal{font-size:24px;font-weight:800}
-.summary{background:#f7fafc;border:1px solid #e1e8ef;border-radius:8px;padding:12px;margin-top:10px}
-.summaryRow{display:inline-block;width:24%;font-size:10px;color:#6d8498}
-.summaryRow b{display:block;color:#17324d;font-size:14px;margin-top:3px}
+.hint{background:#eef8f4;border:1px solid #d5eee5;border-radius:7px;padding:10px;font-size:11px;color:#356859;margin-top:8px}
+.bigTotal{font-size:22px;font-weight:800}
+.summary{background:#f7fafc;border:1px solid #e1e8ef;border-radius:8px;padding:12px;margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:10px}
+.summaryRow{font-size:10px;color:#6d8498}
+.summaryRow b{display:block;color:#17324d;font-size:13px;margin-top:3px}
 .sectionLine{height:1px;background:#edf2f7;margin:12px 0}
-.empty{text-align:center;padding:25px;color:#7a90a2;font-size:11px}
-.modal{position:absolute;left:0;top:0;right:0;bottom:0;background:#102f4b88;text-align:center;padding-top:55px;z-index:999}
-.modalbox{display:inline-block;text-align:left;background:#fff;border-radius:11px;padding:20px;width:460px;max-height:84%;overflow:auto;box-shadow:0 12px 40px #0005}
-.modalbox h2{font-size:17px;margin:0 0 14px}
-.hidden{display:none}
-.notice{padding:10px 12px;border-radius:7px;background:#f7fafc;border:1px solid #e0e7ef;font-size:10px;color:#60798e;margin-bottom:10px}
+.empty{text-align:center;padding:20px;color:#7a90a2;font-size:11px}
+
+.modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(16,47,75,0.6);display:flex;align-items:center;justify-content:center;padding:15px;z-index:999}
+.modalbox{background:#fff;border-radius:11px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.modalbox h2{font-size:16px;margin:0 0 12px}
+.hidden{display:none!important}
+.notice{padding:10px 12px;border-radius:7px;background:#f7fafc;border:1px solid #e0e7ef;font-size:11px;color:#60798e;margin-bottom:10px}
+
+.pageFooter{height:35px;background:#102f4b;color:#b9c8d6;font-size:10px;display:flex;align-items:center;justify-content:center;border-top:1px solid #0b7a58;flex-shrink:0}
 
 @media (max-width: 768px) {
-  .cards, .split, .quick { white-space: normal; }
-  .card, .quick, .split .panel { display: block; width: 100%; margin-right: 0; margin-bottom: 10px; }
-  .field { width: 100%; margin-right: 0; }
-  .summaryRow { display: block; width: 100%; margin-bottom: 8px; }
+  .menu-toggle { display: block; }
+  .sidebar { display: none; width: 100%; border-right: none; border-bottom: 1px solid #d8e1ea; position: absolute; top: 60px; left: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .sidebar.show { display: flex; }
+  .layout { flex-direction: column; position: relative; }
+  .clock { display: none; }
+  .page { padding: 12px; }
+  .cards { grid-template-columns: 1fr 1fr; }
+  .split { grid-template-columns: 1fr; }
 }
-
-.pageFooter{height:30px;background:#102f4b;color:#b9c8d6;font-size:10px;display:flex;align-items:center;justify-content:center;border-top:1px solid #0b7a58;flex-shrink:0;letter-spacing:0.3px}
 </style>
 <script>
 var D, CART=[];
@@ -100,14 +107,21 @@ function pad2(n){return n<10?'0'+n:''+n}
 function now(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())}
 function findCustomer(id){var i;for(i=0;i<D.customers.length;i++){if(String(D.customers[i].id)==String(id))return D.customers[i]}return null}
 
+function toggleMenu(){
+  var sb = $('sidebar');
+  if(sb.classList.contains('show')) sb.classList.remove('show');
+  else sb.classList.add('show');
+}
+
+function hideMenuOnMobile(){
+  if(window.innerWidth <= 768) $('sidebar').classList.remove('show');
+}
+
 function loadData(){
   try {
     var raw = localStorage.getItem('gaspro_data');
-    if (raw) {
-      D = JSON.parse(raw);
-    } else {
-      D = {products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'}};
-    }
+    if (raw) D = JSON.parse(raw);
+    else D = {products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'}};
   } catch(e) {
     D = {products:[],customers:[],sales:[],expenses:[],restocks:[],settings:{business:"VICTORS'S GAS POINT",paybill:'522533',account:'7937345'}};
   }
@@ -115,11 +129,8 @@ function loadData(){
 }
 
 function saveData(){
-  try {
-    localStorage.setItem('gaspro_data', JSON.stringify(D));
-  } catch(e) {
-    alert('Could not save data locally.\n' + e.message);
-  }
+  try { localStorage.setItem('gaspro_data', JSON.stringify(D)); }
+  catch(e) { alert('Could not save data locally.\n' + e.message); }
 }
 
 function init(){
@@ -132,11 +143,10 @@ function init(){
 
 function setFooterDate(){
   var d=new Date();
-  var options={year:'numeric',month:'short',day:'numeric'};
-  $('footerDate').innerText=d.toLocaleDateString('en-US',options);
+  $('footerDate').innerText=d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
 }
 function clock(){if($('clock')) $('clock').innerText=new Date().toLocaleString();setTimeout(clock,1000)}
-function shell(title,sub,html){$('title').innerText=title;$('subtitle').innerText=sub;$('page').innerHTML=html}
+function shell(title,sub,html){$('title').innerText=title;$('subtitle').innerText=sub;$('page').innerHTML=html;hideMenuOnMobile()}
 function card(label,value,cls){return '<div class="card"><div class="label">'+label+'</div><div class="value '+(cls||'')+'">'+value+'</div></div>'}
 
 function dashboard(){
@@ -146,10 +156,10 @@ function dashboard(){
   for(i=0;i<D.customers.length;i++)debt+=Number(D.customers[i].debt)||0;
   for(i=0;i<D.products.length;i++){x=D.products[i];full+=Number(x.full)||0;empty+=Number(x.empty)||0;q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;if(Number(x.low)>0&&q<=Number(x.low))low++}
   var net=profit-expense;
-  var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners and grills</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS</div><div class="quickText">Review sales, profit and payments</div></div></div>';
+  var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick-grid"><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS</div><div class="quickText">Review sales, profit and payments</div></div></div></div>';
   var stockRows='';for(i=0;i<D.products.length&&i<6;i++){x=D.products[i];q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;stockRows+='<tr><td>'+esc(x.name)+'</td><td>'+esc(x.cat)+'</td><td>'+q+'</td><td>'+status(x)+'</td></tr>'}
   if(!stockRows)stockRows='<tr><td colspan="4" class="empty">No products yet. Add your products in Stock & Products.</td></tr>';
-  shell('DASHBOARD','Today at a glance', '<div class="cards">'+card('TODAY SALES',money(sales))+card('TODAY GROSS PROFIT',money(profit),'green')+card('TODAY CASH',money(cash))+card('TODAY KCB PAYBILL',money(kcb))+'</div><div class="cards">'+card('TODAY CREDIT',money(credit),'amber')+card('CUSTOMER DEBT',money(debt),'red')+card('FULL CYLINDERS',full)+card('EMPTY CYLINDERS',empty)+'</div>'+quick+'<div class="split"><div class="panel"><div class="panelTitle">TODAY SUMMARY</div><div class="panelSub">Profit after expenses</div><div class="summary"><div class="summaryRow">SALES<b>'+money(sales)+'</b></div><div class="summaryRow">GROSS PROFIT<b>'+money(profit)+'</b></div><div class="summaryRow">EXPENSES<b>'+money(expense)+'</b></div><div class="summaryRow">NET PROFIT<b>'+money(net)+'</b></div></div></div><div class="panel"><div class="panelTitle">STOCK SNAPSHOT</div><div class="panelSub">Your first six products</div><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr>'+stockRows+'</table></div></div>');
+  shell('DASHBOARD','Today at a glance', '<div class="cards">'+card('TODAY SALES',money(sales))+card('TODAY GROSS PROFIT',money(profit),'green')+card('TODAY CASH',money(cash))+card('TODAY KCB PAYBILL',money(kcb))+'</div><div class="cards">'+card('TODAY CREDIT',money(credit),'amber')+card('CUSTOMER DEBT',money(debt),'red')+card('FULL CYLINDERS',full)+card('EMPTY CYLINDERS',empty)+'</div>'+quick+'<div class="split"><div class="panel"><div class="panelTitle">TODAY SUMMARY</div><div class="panelSub">Profit after expenses</div><div class="summary"><div class="summaryRow">SALES<b>'+money(sales)+'</b></div><div class="summaryRow">GROSS PROFIT<b>'+money(profit)+'</b></div><div class="summaryRow">EXPENSES<b>'+money(expense)+'</b></div><div class="summaryRow">NET PROFIT<b>'+money(net)+'</b></div></div></div><div class="panel"><div class="panelTitle">STOCK SNAPSHOT</div><div class="panelSub">First six products</div><div class="table-responsive"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr>'+stockRows+'</table></div></div></div>');
 }
 
 function status(p){var q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;return Number(p.low)>0&&q<=Number(p.low)?'<span class="badge bad">LOW STOCK</span>':'<span class="badge ok">IN STOCK</span>'}
@@ -157,42 +167,42 @@ function status(p){var q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0
 function products(){
   var rows='',i,p,q;for(i=0;i<D.products.length;i++){p=D.products[i];q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;rows+='<tr><td>'+esc(p.name)+'</td><td>'+esc(p.cat)+'</td><td>'+money(p.buy)+'</td><td>'+money(p.sell)+'</td><td>'+q+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.full)||0))+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.empty)||0))+'</td><td>'+status(p)+'</td><td><button class="btn small" onclick="editProduct('+i+')">EDIT</button></td></tr>'}
   if(!rows)rows='<tr><td colspan="9" class="empty">No products added yet.</td></tr>';
-  shell('STOCK & PRODUCTS','Control your products, prices and physical cylinder stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / ADJUST</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Gas Refill and Complete Gas use FULL / EMPTY cylinder quantities. Regulators, Burners and Grills use normal accessory stock.</div><div class="panel"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAILABLE</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div>')
+  shell('STOCK & PRODUCTS','Control products, prices and stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / ADJUST</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Refill and Complete Gas use FULL / EMPTY cylinders. Accessories use standard item stock.</div><div class="panel"><div class="table-responsive"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAIL</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div></div>')
 }
 
 function addProduct(){productModal(-1)}
 function editProduct(i){productModal(i)}
-function productModal(idx){var p=idx<0?{name:'',cat:'Gas Refill',buy:0,sell:0,stock:0,full:0,empty:0,low:2}:D.products[idx];modal(idx<0?'ADD PRODUCT':'EDIT PRODUCT','<div class="field full"><label>PRODUCT NAME</label><input id="pn" value="'+esc(p.name)+'"></div><div class="field"><label>CATEGORY</label><select id="pc"><option '+(p.cat=='Gas Refill'?'selected':'')+'>Gas Refill</option><option '+(p.cat=='Complete Gas'?'selected':'')+'>Complete Gas</option><option '+(p.cat=='Accessory'?'selected':'')+'>Accessory</option></select></div><div class="field"><label>LOW STOCK LEVEL</label><input id="pl" type="number" value="'+(Number(p.low)||0)+'"></div><div class="field"><label>BUYING PRICE</label><input id="pb" type="number" value="'+(Number(p.buy)||0)+'"></div><div class="field"><label>SELLING PRICE</label><input id="ps" type="number" value="'+(Number(p.sell)||0)+'"></div><div class="field"><label>ACCESSORY STOCK</label><input id="pq" type="number" value="'+(Number(p.stock)||0)+'"></div><div class="field"><label>FULL CYLINDERS</label><input id="pf" type="number" value="'+(Number(p.full)||0)+'"></div><div class="field"><label>EMPTY CYLINDERS</label><input id="pe" type="number" value="'+(Number(p.empty)||0)+'"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveProduct('+idx+')">SAVE PRODUCT</button>')}
+function productModal(idx){var p=idx<0?{name:'',cat:'Gas Refill',buy:0,sell:0,stock:0,full:0,empty:0,low:2}:D.products[idx];modal(idx<0?'ADD PRODUCT':'EDIT PRODUCT','<div class="form-grid"><div class="field full"><label>PRODUCT NAME</label><input id="pn" value="'+esc(p.name)+'"></div><div class="field"><label>CATEGORY</label><select id="pc"><option '+(p.cat=='Gas Refill'?'selected':'')+'>Gas Refill</option><option '+(p.cat=='Complete Gas'?'selected':'')+'>Complete Gas</option><option '+(p.cat=='Accessory'?'selected':'')+'>Accessory</option></select></div><div class="field"><label>LOW STOCK LEVEL</label><input id="pl" type="number" value="'+(Number(p.low)||0)+'"></div><div class="field"><label>BUYING PRICE</label><input id="pb" type="number" value="'+(Number(p.buy)||0)+'"></div><div class="field"><label>SELLING PRICE</label><input id="ps" type="number" value="'+(Number(p.sell)||0)+'"></div><div class="field"><label>ACCESSORY STOCK</label><input id="pq" type="number" value="'+(Number(p.stock)||0)+'"></div><div class="field"><label>FULL CYLINDERS</label><input id="pf" type="number" value="'+(Number(p.full)||0)+'"></div><div class="field"><label>EMPTY CYLINDERS</label><input id="pe" type="number" value="'+(Number(p.empty)||0)+'"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveProduct('+idx+')">SAVE PRODUCT</button>')}
 function saveProduct(idx){var p={name:$('pn').value,cat:$('pc').value,buy:+$('pb').value||0,sell:+$('ps').value||0,stock:+$('pq').value||0,full:+$('pf').value||0,empty:+$('pe').value||0,low:+$('pl').value||0};if(!p.name)return alert('Product name is required.');if(p.sell<0||p.buy<0)return alert('Prices cannot be negative.');if(idx<0)D.products.push(p);else D.products[idx]=p;saveData();closeModal();products()}
-function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RESTOCK / ADJUST STOCK','<div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS ADD</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS ADD</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS ADD</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / NOTE</label><input id="rs"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE ADJUSTMENT</button>')}
+function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RESTOCK / ADJUST STOCK','<div class="form-grid"><div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS ADD</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS ADD</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS ADD</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / NOTE</label><input id="rs"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE ADJUSTMENT</button>')}
 function saveRestock(){var p=D.products[+$('ri').value],f=+$('rf').value||0,e=+$('re').value||0,q=+$('rq').value||0,c=+$('rc').value||0;if(f<0||e<0||q<0)return alert('Stock additions cannot be negative.');p.full=(Number(p.full)||0)+f;p.empty=(Number(p.empty)||0)+e;p.stock=(Number(p.stock)||0)+q;if(c>0)p.buy=c;D.restocks.push({dt:now(),product:p.name,full:f,empty:e,stock:q,cost:c,note:$('rs').value});saveData();closeModal();products()}
 
-function customers(){var rows='',i,c;for(i=0;i<D.customers.length;i++){c=D.customers[i];rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td><button class="btn small" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button></td></tr>'}if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div>')}
-function addCustomer(){modal('ADD CUSTOMER','<div class="field full"><label>NAME</label><input id="cn"></div><div class="field"><label>PHONE</label><input id="cp"></div><div class="field"><label>LOCATION</label><input id="cl"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
+function customers(){var rows='',i,c;for(i=0;i<D.customers.length;i++){c=D.customers[i];rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td><button class="btn small" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button></td></tr>'}if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><div class="table-responsive"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div></div>')}
+function addCustomer(){modal('ADD CUSTOMER','<div class="form-grid"><div class="field full"><label>NAME</label><input id="cn"></div><div class="field full"><label>PHONE</label><input id="cp"></div><div class="field full"><label>LOCATION</label><input id="cl"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
 function saveCustomer(){var c={id:new Date().getTime(),name:$('cn').value,phone:$('cp').value,location:$('cl').value,debt:0};if(!c.name)return alert('Customer name is required.');D.customers.push(c);saveData();closeModal();customers()}
-function payDebt(id){var c=findCustomer(id);modal('RECEIVE CUSTOMER PAYMENT','<div class="notice"><strong>'+esc(c.name)+'</strong><br>Outstanding debt: <b>'+money(c.debt)+'</b></div><div class="field full"><label>AMOUNT RECEIVED</label><input id="pa" type="number"></div><div class="field"><label>METHOD</label><select id="pm"><option>Cash</option><option>KCB PayBill</option></select></div><div class="field"><label>REFERENCE</label><input id="pr"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="savePayment('+id+')">SAVE PAYMENT</button>')}
+function payDebt(id){var c=findCustomer(id);modal('RECEIVE CUSTOMER PAYMENT','<div class="notice"><strong>'+esc(c.name)+'</strong><br>Outstanding debt: <b>'+money(c.debt)+'</b></div><div class="form-grid"><div class="field full"><label>AMOUNT RECEIVED</label><input id="pa" type="number"></div><div class="field full"><label>METHOD</label><select id="pm"><option>Cash</option><option>KCB PayBill</option></select></div><div class="field full"><label>REFERENCE</label><input id="pr"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="savePayment('+id+')">SAVE PAYMENT</button>')}
 function savePayment(id){var c=findCustomer(id),a=+$('pa').value||0;if(a<=0||a>Number(c.debt))return alert('Enter an amount not greater than the debt.');c.debt-=a;D.sales.push({id:new Date().getTime(),dt:now(),customer:'Debt payment - '+c.name,total:0,profit:0,cash:$('pm').value=='Cash'?a:0,kcb:$('pm').value=='KCB PayBill'?a:0,credit:0,ref:$('pr').value,type:'Debt Payment'});saveData();closeModal();customers()}
 
 function sale(){
   var opts='<option value="-1">Walk-in Customer</option>',pro='',i;if(D.customers.length){for(i=0;i<D.customers.length;i++)opts+='<option value="'+i+'">'+esc(D.customers[i].name)+'</option>'}for(i=0;i<D.products.length;i++)pro+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';
   if(!pro)pro='<option value="-1">No products - add stock first</option>';
   CART=[];
-  shell('NEW SALE','Fast POS checkout - Cash - KCB PayBill - Credit','<div class="notice"><strong>Payment rule:</strong> Cash + KCB PayBill + Credit must equal the sale total. KCB PayBill <b>'+esc(D.settings.paybill)+'</b> | Account <b>'+esc(D.settings.account)+'</b>.</div><div class="split"><div class="panel"><div class="panelTitle">SALE DETAILS</div><div class="panelSub">Select customer and product</div><div class="field full"><label>CUSTOMER</label><select id="sc">'+opts+'</select></div><div class="field full"><label>PRODUCT</label><select id="sp" onchange="showProductInfo()">'+pro+'</select></div><div class="field"><label>QUANTITY</label><input id="sq" type="number" value="1" min="1" onkeyup="showProductInfo()"></div><div class="field"><label>SELLING PRICE</label><input id="salePrice" type="number" disabled></div><div class="field full"><label>CYLINDER HANDLING</label><select id="returnMode"><option value="none">Accessory / no cylinder exchange</option><option value="returned">Gas refill - customer returns empty</option><option value="notreturned">Gas refill - no empty returned</option><option value="complete">Complete gas - cylinder leaves shop</option></select></div><button class="btn primary" onclick="addCart()">ADD TO SALE</button><button class="btn" onclick="addCustomer()">NEW CUSTOMER</button></div><div class="panel"><div class="panelTitle">PAYMENT</div><div class="panelSub">Enter the payment split</div><div class="field"><label>CASH</label><input id="cash" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>KCB PAYBILL</label><input id="kcb" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>CREDIT</label><input id="cred" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field full"><label>REFERENCE</label><input id="ref"></div><div class="hint"><b>Customer pays to:</b><br>KCB PayBill: <b>'+esc(D.settings.paybill)+'</b><br>Account: <b>'+esc(D.settings.account)+'</b></div><div id="payStatus" class="summary">Payment not yet entered.</div></div></div><div class="panel"><div class="panelTitle">CURRENT SALE</div><div class="panelSub">Review all items before saving</div><div id="cart"><div class="empty">No items added.</div></div><div class="sectionLine"></div><div class="bigTotal" id="stotal">TOTAL KSh 0.00</div><div style="margin-top:10px"><button class="btn primary" onclick="saveSale()">SAVE SALE</button><button class="btn danger" onclick="clearCart()">CLEAR SALE</button></div></div>');showProductInfo()}
+  shell('NEW SALE','Fast POS checkout','<div class="notice"><strong>Payment rule:</strong> Cash + KCB PayBill + Credit must equal the sale total. PayBill: <b>'+esc(D.settings.paybill)+'</b> | Account: <b>'+esc(D.settings.account)+'</b>.</div><div class="split"><div class="panel"><div class="panelTitle">SALE DETAILS</div><div class="panelSub">Select customer and product</div><div class="form-grid"><div class="field full"><label>CUSTOMER</label><select id="sc">'+opts+'</select></div><div class="field full"><label>PRODUCT</label><select id="sp" onchange="showProductInfo()">'+pro+'</select></div><div class="field"><label>QUANTITY</label><input id="sq" type="number" value="1" min="1" onkeyup="showProductInfo()"></div><div class="field"><label>SELLING PRICE</label><input id="salePrice" type="number" disabled></div><div class="field full"><label>CYLINDER HANDLING</label><select id="returnMode"><option value="none">Accessory / no cylinder exchange</option><option value="returned">Gas refill - customer returns empty</option><option value="notreturned">Gas refill - no empty returned</option><option value="complete">Complete gas - cylinder leaves shop</option></select></div></div><button class="btn primary" onclick="addCart()">ADD TO SALE</button><button class="btn" onclick="addCustomer()">NEW CUSTOMER</button></div><div class="panel"><div class="panelTitle">PAYMENT</div><div class="panelSub">Enter payment split</div><div class="form-grid"><div class="field"><label>CASH</label><input id="cash" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field"><label>KCB PAYBILL</label><input id="kcb" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field full"><label>CREDIT</label><input id="cred" type="number" value="0" onkeyup="updatePaymentStatus()"></div><div class="field full"><label>REFERENCE</label><input id="ref"></div></div><div class="hint"><b>Customer pays to:</b><br>KCB PayBill: <b>'+esc(D.settings.paybill)+'</b><br>Account: <b>'+esc(D.settings.account)+'</b></div><div id="payStatus" class="summary">Payment not yet entered.</div></div></div><div class="panel"><div class="panelTitle">CURRENT SALE</div><div class="panelSub">Review items before saving</div><div id="cart"><div class="empty">No items added.</div></div><div class="sectionLine"></div><div class="bigTotal" id="stotal">TOTAL KSh 0.00</div><div style="margin-top:10px"><button class="btn primary" onclick="saveSale()">SAVE SALE</button><button class="btn danger" onclick="clearCart()">CLEAR SALE</button></div></div>');showProductInfo()}
 function showProductInfo(){var i=+$('sp').value,p=D.products[i],q=+$('sq').value||1;if(!p){if($('salePrice'))$('salePrice').value='';return}if($('salePrice'))$('salePrice').value=(Number(p.sell)||0).toFixed(2);var mode=$('returnMode');if(p.cat=='Accessory')mode.value='none';else if(p.cat=='Complete Gas')mode.value='complete';else mode.value='returned'}
 function addCart(){var i=+$('sp').value,p=D.products[i],q=+$('sq').value||0,mode=$('returnMode').value;if(!p||q<=0)return alert('Select a product and quantity.');if(p.cat=='Accessory'){if(Number(p.stock)<q)return alert('Not enough accessory stock.');mode='none'}else{if(Number(p.full)<q)return alert('Not enough full cylinders available.')}CART.push({p:p,q:q,mode:mode});renderCart()}
-function renderCart(){var html='',total=0,profit=0,i,x,t;if(!CART.length){$('cart').innerHTML='<div class="empty">No items added.</div>';$('stotal').innerText='TOTAL KSh 0.00';updatePaymentStatus();return}html='<table><tr><th>PRODUCT</th><th>QTY</th><th>PRICE</th><th>TOTAL</th><th>HANDLING</th><th>ACTION</th></tr>';for(i=0;i<CART.length;i++){x=CART[i];t=Number(x.p.sell)*x.q;total+=t;profit+=(Number(x.p.sell)-Number(x.p.buy))*x.q;html+='<tr><td>'+esc(x.p.name)+'</td><td>'+x.q+'</td><td>'+money(x.p.sell)+'</td><td>'+money(t)+'</td><td>'+handlingText(x.mode)+'</td><td><button class="btn small danger" onclick="removeCart('+i+')">REMOVE</button></td></tr>'}html+='</table>';$('cart').innerHTML=html;$('stotal').innerText='TOTAL '+money(total);updatePaymentStatus()}
+function renderCart(){var html='',total=0,profit=0,i,x,t;if(!CART.length){$('cart').innerHTML='<div class="empty">No items added.</div>';$('stotal').innerText='TOTAL KSh 0.00';updatePaymentStatus();return}html='<div class="table-responsive"><table><tr><th>PRODUCT</th><th>QTY</th><th>PRICE</th><th>TOTAL</th><th>HANDLING</th><th>ACTION</th></tr>';for(i=0;i<CART.length;i++){x=CART[i];t=Number(x.p.sell)*x.q;total+=t;profit+=(Number(x.p.sell)-Number(x.p.buy))*x.q;html+='<tr><td>'+esc(x.p.name)+'</td><td>'+x.q+'</td><td>'+money(x.p.sell)+'</td><td>'+money(t)+'</td><td>'+handlingText(x.mode)+'</td><td><button class="btn small danger" onclick="removeCart('+i+')">REMOVE</button></td></tr>'}html+='</table></div>';$('cart').innerHTML=html;$('stotal').innerText='TOTAL '+money(total);updatePaymentStatus()}
 function handlingText(m){if(m=='returned')return 'EMPTY RETURNED';if(m=='notreturned')return 'NO EMPTY';if(m=='complete')return 'COMPLETE GAS';return '-'}
 function removeCart(i){CART.splice(i,1);renderCart()}
 function clearCart(){CART=[];if($('cart'))renderCart()}
 function cartTotal(){var t=0,i;for(i=0;i<CART.length;i++)t+=Number(CART[i].p.sell)*CART[i].q;return t}
-function updatePaymentStatus(){if(!$('payStatus'))return;var total=cartTotal(),paid=(+$('cash').value||0)+(+$('kcb').value||0)+(+$('cred').value||0),diff=total-paid;if(Math.abs(diff)<0.01)$('payStatus').innerHTML='<b style="color:#087551">PAYMENT COMPLETE</b><br>Total received matches sale total.';else if(diff>0)$('payStatus').innerHTML='<b style="color:#9a6700">BALANCE '+money(diff)+'</b><br>Enter more payment or credit.';else $('payStatus').innerHTML='<b style="color:#b42318">OVERPAYMENT '+money(-diff)+'</b><br>Reduce the payment amounts.'}
+function updatePaymentStatus(){if(!$('payStatus'))return;var total=cartTotal(),paid=(+$('cash').value||0)+(+$('kcb').value||0)+(+$('cred').value||0),diff=total-paid;if(Math.abs(diff)<0.01)$('payStatus').innerHTML='<b style="color:#087551">PAYMENT COMPLETE</b><br>Total received matches sale total.';else if(diff>0)$('payStatus').innerHTML='<b style="color:#9a6700">BALANCE '+money(diff)+'</b><br>Enter more payment or credit.';else $('payStatus').innerHTML='<b style="color:#b42318">OVERPAYMENT '+money(-diff)+'</b><br>Reduce payment amounts.'}
 function saveSale(){var total=cartTotal(),profit=0,i,x,cash=+$('cash').value||0,kcb=+$('kcb').value||0,credit=+$('cred').value||0,ci=+$('sc').value,cust=ci>=0?D.customers[ci]:null;if(!CART.length)return alert('Add at least one product.');for(i=0;i<CART.length;i++)profit+=(Number(CART[i].p.sell)-Number(CART[i].p.buy))*CART[i].q;if(Math.round((cash+kcb+credit)*100)!=Math.round(total*100))return alert('Cash + KCB PayBill + Credit must equal '+money(total)+'.');if(credit&&!cust)return alert('Select a customer for credit sales.');for(i=0;i<CART.length;i++){x=CART[i];if(x.p.cat=='Accessory'){x.p.stock-=x.q}else{ x.p.full-=x.q;if(x.mode=='returned')x.p.empty=(Number(x.p.empty)||0)+x.q; }}if(cust&&credit)cust.debt=(Number(cust.debt)||0)+credit;D.sales.push({id:new Date().getTime(),dt:now(),customer:cust?cust.name:'Walk-in Customer',total:total,profit:profit,cash:cash,kcb:kcb,credit:credit,ref:$('ref').value,type:'Sale'});saveData();alert('SALE SAVED\n\nTotal: '+money(total));sale()}
 
-function expenses(){var rows='',i,e;for(i=D.expenses.length-1;i>=0;i--){e=D.expenses[i];rows+='<tr><td>'+e.dt.substr(0,10)+'</td><td>'+esc(e.cat)+'</td><td>'+money(e.amount)+'</td><td>'+esc(e.notes)+'</td></tr>'}if(!rows)rows='<tr><td colspan="4" class="empty">No expenses recorded.</td></tr>';shell('EXPENSES','Record costs and calculate net profit','<div class="panel"><div class="panelTitle">ADD EXPENSE</div><div class="panelSub">Transport, rent, electricity, delivery and other business costs</div><div class="field"><label>CATEGORY</label><select id="ec"><option>Transport</option><option>Rent</option><option>Electricity</option><option>Delivery</option><option>Other</option></select></div><div class="field"><label>AMOUNT</label><input id="ea" type="number"></div><div class="field full"><label>NOTES</label><input id="en"></div><button class="btn primary" onclick="saveExpense()">SAVE EXPENSE</button></div><div class="panel"><table><tr><th>DATE</th><th>CATEGORY</th><th>AMOUNT</th><th>NOTES</th></tr>'+rows+'</table></div>')}
+function expenses(){var rows='',i,e;for(i=D.expenses.length-1;i>=0;i--){e=D.expenses[i];rows+='<tr><td>'+e.dt.substr(0,10)+'</td><td>'+esc(e.cat)+'</td><td>'+money(e.amount)+'</td><td>'+esc(e.notes)+'</td></tr>'}if(!rows)rows='<tr><td colspan="4" class="empty">No expenses recorded.</td></tr>';shell('EXPENSES','Record costs and calculate net profit','<div class="panel"><div class="panelTitle">ADD EXPENSE</div><div class="panelSub">Transport, rent, electricity, delivery and other business costs</div><div class="form-grid"><div class="field full"><label>CATEGORY</label><select id="ec"><option>Transport</option><option>Rent</option><option>Electricity</option><option>Delivery</option><option>Other</option></select></div><div class="field full"><label>AMOUNT</label><input id="ea" type="number"></div><div class="field full"><label>NOTES</label><input id="en"></div></div><button class="btn primary" onclick="saveExpense()">SAVE EXPENSE</button></div><div class="panel"><div class="table-responsive"><table><tr><th>DATE</th><th>CATEGORY</th><th>AMOUNT</th><th>NOTES</th></tr>'+rows+'</table></div></div>')}
 function saveExpense(){var a=+$('ea').value||0;if(a<=0)return alert('Enter an amount.');D.expenses.push({dt:now(),cat:$('ec').value,amount:a,notes:$('en').value});saveData();expenses()}
 
-function reports(){var total=0,profit=0,exp=0,cash=0,kcb=0,credit=0,i,s,rows='';for(i=0;i<D.sales.length;i++){s=D.sales[i];total+=Number(s.total)||0;profit+=Number(s.profit)||0;cash+=Number(s.cash)||0;kcb+=Number(s.kcb)||0;credit+=Number(s.credit)||0;rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>'}for(i=0;i<D.expenses.length;i++)exp+=Number(D.expenses[i].amount)||0;if(!rows)rows='<tr><td colspan="8" class="empty">No sales recorded yet.</td></tr>';shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="cards">'+card('TOTAL SALES',money(total))+card('GROSS PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT<b>'+money(credit)+'</b></div><div class="summaryRow">TRANSACTIONS<b>'+D.sales.length+'</b></div></div></div><div class="panel"><table><tr><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div>')}
-function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL AMOUNT</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT AMOUNT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>GROSS PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
+function reports(){var total=0,profit=0,exp=0,cash=0,kcb=0,credit=0,i,s,rows='';for(i=0;i<D.sales.length;i++){s=D.sales[i];total+=Number(s.total)||0;profit+=Number(s.profit)||0;cash+=Number(s.cash)||0;kcb+=Number(s.kcb)||0;credit+=Number(s.credit)||0;rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>'}for(i=0;i<D.expenses.length;i++)exp+=Number(D.expenses[i].amount)||0;if(!rows)rows='<tr><td colspan="8" class="empty">No sales recorded yet.</td></tr>';shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="cards">'+card('TOTAL SALES',money(total))+card('GROSS PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT<b>'+money(credit)+'</b></div><div class="summaryRow">COUNT<b>'+D.sales.length+'</b></div></div></div><div class="panel"><div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div></div>')}
+function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="form-grid"><div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>GROSS PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
 function saveEditedSale(idx){var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0;s.customer=$('es_c').value;s.cash=cash;s.kcb=kcb;s.credit=cred;s.total=cash+kcb+cred;s.profit=+$('es_prof').value||0;s.ref=$('es_ref').value;saveData();closeModal();reports()}
 function printSale(idx){
   var s=D.sales[idx];
@@ -219,7 +229,7 @@ function printSale(idx){
   w.close();
 }
 
-function settings(){shell('SETTINGS','Business and payment information','<div class="panel"><div class="panelTitle">BUSINESS DETAILS</div><div class="field full"><label>BUSINESS NAME</label><input id="bn" value="'+esc(D.settings.business)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="bp" value="'+esc(D.settings.paybill)+'"></div><div class="field"><label>KCB ACCOUNT</label><input id="ba" value="'+esc(D.settings.account)+'"></div><button class="btn primary" onclick="saveSettings()">SAVE SETTINGS</button></div><div class="panel"><div class="panelTitle">DATA SAFETY</div><div class="panelSub">Export your data to JSON for safe backup.</div><button class="btn" onclick="backup()">BACKUP DATA</button></div>')}
+function settings(){shell('SETTINGS','Business and payment information','<div class="panel"><div class="panelTitle">BUSINESS DETAILS</div><div class="form-grid"><div class="field full"><label>BUSINESS NAME</label><input id="bn" value="'+esc(D.settings.business)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="bp" value="'+esc(D.settings.paybill)+'"></div><div class="field"><label>KCB ACCOUNT</label><input id="ba" value="'+esc(D.settings.account)+'"></div></div><button class="btn primary" onclick="saveSettings()">SAVE SETTINGS</button></div><div class="panel"><div class="panelTitle">DATA SAFETY</div><div class="panelSub">Export your data to JSON for safe backup.</div><button class="btn" onclick="backup()">BACKUP DATA</button></div>')}
 function saveSettings(){D.settings.business=$('bn').value;D.settings.paybill=$('bp').value;D.settings.account=$('ba').value;saveData();if($('brandText')) $('brandText').innerText = D.settings.business;alert('Settings saved.');dashboard()}
 
 function backup(){
@@ -243,13 +253,18 @@ function closeModal(){$('modal').className='modal hidden'}
 <body onload="init()">
 <div class="app-container">
   <div class="top">
-    <div class="logo">GP</div>
-    <div class="brand"><span id="brandText">VICTORS'S GAS POINT</span><div class="sub">Professional gas sales, stock and customer management</div></div>
-    <div class="clock" id="clock"></div>
+    <div class="brand-group">
+      <div class="logo">GP</div>
+      <div class="brand"><span id="brandText">VICTORS'S GAS POINT</span><div class="sub">Professional gas sales, stock & customer management</div></div>
+    </div>
+    <div class="top-right">
+      <div class="clock" id="clock"></div>
+      <button class="menu-toggle" onclick="toggleMenu()">MENU ☰</button>
+    </div>
   </div>
   
   <div class="layout">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <div class="sideTitle">MAIN MENU</div>
       <button class="navBtn" onclick="dashboard()">DASHBOARD</button>
       <button class="navBtn" onclick="sale()">NEW SALE</button>
