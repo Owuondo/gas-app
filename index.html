@@ -60,7 +60,7 @@ input:focus,select:focus{border-color:#0b7a58;outline:none}
 .toolbar{margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px}
 
 .table-responsive{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px;border:1px solid #edf2f7;border-radius:6px}
-table{width:100%;border-collapse:collapse;min-width:550px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:650px;background:#fff}
 th{background:#f0f4f7;text-align:left;font-size:9px;padding:10px 8px;border-bottom:1px solid #cbd5e1;color:#3b566d}
 td{padding:9px 8px;border-bottom:1px solid #edf2f7;font-size:11px;word-break:normal}
 tr:hover td{background:#fafcfd}
@@ -227,7 +227,7 @@ function customers(){window.currentPage = 'customers';var rows='',i,c;for(i=0;i<
 function addCustomer(){modal('ADD CUSTOMER','<div class="form-grid"><div class="field full"><label>NAME</label><input id="cn"></div><div class="field full"><label>PHONE</label><input id="cp"></div><div class="field full"><label>LOCATION</label><input id="cl"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
 function saveCustomer(){var c={id:new Date().getTime(),name:$('cn').value,phone:$('cp').value,location:$('cl').value,debt:0};if(!c.name)return alert('Customer name is required.');D.customers.push(c);saveData();closeModal();customers()}
 function payDebt(id){var c=findCustomer(id);modal('RECEIVE CUSTOMER PAYMENT','<div class="notice"><strong>'+esc(c.name)+'</strong><br>Outstanding debt: <b>'+money(c.debt)+'</b></div><div class="form-grid"><div class="field full"><label>AMOUNT RECEIVED</label><input id="pa" type="number"></div><div class="field full"><label>METHOD</label><select id="pm"><option>Cash</option><option>KCB PayBill</option></select></div><div class="field full"><label>REFERENCE</label><input id="pr"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="savePayment('+id+')">SAVE PAYMENT</button>')}
-function savePayment(id){var c=findCustomer(id),a=+$('pa').value||0;if(a<=0||a>Number(c.debt))return alert('Enter an amount not greater than the debt.');c.debt-=a;var sIdx=D.sales.length;D.sales.push({id:new Date().getTime(),dt:now(),customer:'Debt payment - '+c.name,total:a,profit:0,cash:$('pm').value=='Cash'?a:0,kcb:$('pm').value=='KCB PayBill'?a:0,credit:0,ref:$('pr').value,type:'Debt Payment'});saveData();closeModal();customers()}
+function savePayment(id){var c=findCustomer(id),a=+$('pa').value||0;if(a<=0||a>Number(c.debt))return alert('Enter an amount not greater than the debt.');c.debt-=a;var sIdx=D.sales.length;D.sales.push({id:new Date().getTime(),dt:now(),customer:'Debt payment - '+c.name,items:'Debt Payment',total:a,profit:0,cash:$('pm').value=='Cash'?a:0,kcb:$('pm').value=='KCB PayBill'?a:0,credit:0,ref:$('pr').value,type:'Debt Payment'});saveData();closeModal();customers()}
 
 function sale(){
   window.currentPage = 'sale';
@@ -247,7 +247,14 @@ function updatePaymentStatus(){if(!$('payStatus'))return;var total=cartTotal(),p
 function saveSale(){
   var total=cartTotal(),profit=0,i,x,cash=+$('cash').value||0,kcb=+$('kcb').value||0,credit=+$('cred').value||0,ci=+$('sc').value,cust=ci>=0?D.customers[ci]:null;
   if(!CART.length)return alert('Add at least one product.');
-  for(i=0;i<CART.length;i++)profit+=(Number(CART[i].p.sell)-Number(CART[i].p.buy))*CART[i].q;
+  
+  var itemSummaryList = [];
+  for(i=0;i<CART.length;i++){
+    profit+=(Number(CART[i].p.sell)-Number(CART[i].p.buy))*CART[i].q;
+    itemSummaryList.push(CART[i].q + 'x ' + CART[i].p.name);
+  }
+  var itemsText = itemSummaryList.join(', ');
+
   if(Math.round((cash+kcb+credit)*100)!=Math.round(total*100))return alert('Cash + KCB PayBill + Credit must equal '+money(total)+'.');
   if(credit&&!cust)return alert('Select a customer for credit sales.');
   for(i=0;i<CART.length;i++){
@@ -257,7 +264,7 @@ function saveSale(){
   }
   if(cust&&credit)cust.debt=(Number(cust.debt)||0)+credit;
   var newSaleIndex = D.sales.length;
-  D.sales.push({id:new Date().getTime(),dt:now(),customer:cust?cust.name:'Walk-in Customer',total:total,profit:profit,cash:cash,kcb:kcb,credit:credit,ref:$('ref').value,type:'Sale'});
+  D.sales.push({id:new Date().getTime(),dt:now(),customer:cust?cust.name:'Walk-in Customer',items:itemsText,total:total,profit:profit,cash:cash,kcb:kcb,credit:credit,ref:$('ref').value,type:'Sale'});
   saveData();
   if(confirm('SALE SAVED ONLINE!\n\nClick OK to print receipt now.')){
     printSale(newSaleIndex);
@@ -278,15 +285,16 @@ function reports(){
     cash+=Number(s.cash)||0;
     kcb+=Number(s.kcb)||0;
     credit+=Number(s.credit)||0;
-    rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>';
+    var itemStr = s.items ? esc(s.items) : '-';
+    rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td><b>'+itemStr+'</b></td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>';
   }
   for(i=0;i<D.expenses.length;i++)exp+=Number(D.expenses[i].amount)||0;
-  if(!rows)rows='<tr><td colspan="8" class="empty">No sales recorded yet.</td></tr>';
-  shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="toolbar"><button class="btn primary" onclick="exportToExcel()">EXPORT TO EXCEL (.CSV)</button><button class="btn" onclick="backup()">BACKUP JSON</button></div><div class="cards">'+card('TOTAL SALES',money(total))+card('GROSS PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT<b>'+money(credit)+'</b></div><div class="summaryRow">COUNT<b>'+D.sales.length+'</b></div></div></div><div class="panel"><div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div></div>');
+  if(!rows)rows='<tr><td colspan="9" class="empty">No sales recorded yet.</td></tr>';
+  shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="toolbar"><button class="btn primary" onclick="exportToExcel()">EXPORT TO EXCEL (.CSV)</button><button class="btn" onclick="backup()">BACKUP JSON</button></div><div class="cards">'+card('TOTAL SALES',money(total))+card('GROSS PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT<b>'+money(credit)+'</b></div><div class="summaryRow">COUNT<b>'+D.sales.length+'</b></div></div></div><div class="panel"><div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>ITEMS SOLD</th><th>TOTAL</th><th>PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div></div>');
 }
 
-function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="form-grid"><div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>GROSS PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
-function saveEditedSale(idx){var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0;s.customer=$('es_c').value;s.cash=cash;s.kcb=kcb;s.credit=cred;s.total=cash+kcb+cred;s.profit=+$('es_prof').value||0;s.ref=$('es_ref').value;saveData();closeModal();reports()}
+function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="form-grid"><div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field full"><label>ITEMS SOLD</label><input id="es_items" value="'+esc(s.items||'')+ '"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>GROSS PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
+function saveEditedSale(idx){var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0;s.customer=$('es_c').value;s.items=$('es_items').value;s.cash=cash;s.kcb=kcb;s.credit=cred;s.total=cash+kcb+cred;s.profit=+$('es_prof').value||0;s.ref=$('es_ref').value;saveData();closeModal();reports()}
 
 function printSale(idx){
   var s=D.sales[idx];
@@ -296,6 +304,7 @@ function printSale(idx){
   w.document.write('<div class="line"></div>');
   w.document.write('Date: '+s.dt.substr(0,16).replace('T',' ')+'<br>');
   w.document.write('Customer: '+esc(s.customer)+'<br>');
+  if(s.items)w.document.write('Items: '+esc(s.items)+'<br>');
   if(s.ref)w.document.write('Ref: '+esc(s.ref)+'<br>');
   w.document.write('<div class="line"></div>');
   w.document.write('<table>');
@@ -316,12 +325,13 @@ function printSale(idx){
 function exportToExcel(){
   if(!D.sales || !D.sales.length) return alert('No sales available to export.');
   var csvLines = [];
-  csvLines.push(["Date", "Customer", "Total Amount (KSh)", "Profit (KSh)", "Cash Paid", "KCB PayBill", "Credit", "Reference"].join(","));
+  csvLines.push(["Date", "Customer", "Items Sold", "Total Amount (KSh)", "Profit (KSh)", "Cash Paid", "KCB PayBill", "Credit", "Reference"].join(","));
   for(var i=0; i<D.sales.length; i++){
     var s = D.sales[i];
     var line = [
       '"' + (s.dt ? s.dt.substr(0,16).replace('T',' ') : '') + '"',
       '"' + (s.customer || '').replace(/"/g, '""') + '"',
+      '"' + (s.items || '').replace(/"/g, '""') + '"',
       (Number(s.total) || 0).toFixed(2),
       (Number(s.profit) || 0).toFixed(2),
       (Number(s.cash) || 0).toFixed(2),
