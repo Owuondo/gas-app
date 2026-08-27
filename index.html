@@ -221,28 +221,74 @@ function addProduct(){productModal(-1)}
 function editProduct(i){productModal(i)}
 function productModal(idx){var p=idx<0?{name:'',cat:'Gas Refill',buy:0,sell:0,stock:0,full:0,empty:0,low:2}:D.products[idx];modal(idx<0?'ADD PRODUCT':'EDIT PRODUCT','<div class="form-grid"><div class="field full"><label>PRODUCT NAME</label><input id="pn" value="'+esc(p.name)+'"></div><div class="field"><label>CATEGORY</label><select id="pc"><option '+(p.cat=='Gas Refill'?'selected':'')+'>Gas Refill</option><option '+(p.cat=='Complete Gas'?'selected':'')+'>Complete Gas</option><option '+(p.cat=='Accessory'?'selected':'')+'>Accessory</option></select></div><div class="field"><label>LOW STOCK LEVEL</label><input id="pl" type="number" value="'+(Number(p.low)||0)+'"></div><div class="field"><label>BUYING PRICE</label><input id="pb" type="number" value="'+(Number(p.buy)||0)+'"></div><div class="field"><label>SELLING PRICE</label><input id="ps" type="number" value="'+(Number(p.sell)||0)+'"></div><div class="field"><label>ACCESSORY STOCK</label><input id="pq" type="number" value="'+(Number(p.stock)||0)+'"></div><div class="field"><label>FULL CYLINDERS</label><input id="pf" type="number" value="'+(Number(p.full)||0)+'"></div><div class="field"><label>EMPTY CYLINDERS</label><input id="pe" type="number" value="'+(Number(p.empty)||0)+'"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveProduct('+idx+')">SAVE PRODUCT</button>')}
 function saveProduct(idx){var p={name:$('pn').value,cat:$('pc').value,buy:+$('pb').value||0,sell:+$('ps').value||0,stock:+$('pq').value||0,full:+$('pf').value||0,empty:+$('pe').value||0,low:+$('pl').value||0};if(!p.name)return alert('Product name is required.');if(p.sell<0||p.buy<0)return alert('Prices cannot be negative.');if(idx<0)D.products.push(p);else D.products[idx]=p;saveData();closeModal();products()}
-function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RECORD STOCK PURCHASE / RESTOCK','<div class="form-grid"><div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS BOUGHT</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS BOUGHT</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS BOUGHT</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE (PER UNIT)</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / RECEIPT NOTE</label><input id="rs" placeholder="e.g. K-Gas Supplier, Invoice #102"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE STOCK PURCHASE</button>')}
+
+function restock(){
+  var opts='',i;
+  if(!D.products.length) return alert('Add a product first.');
+  for(i=0;i<D.products.length;i++) opts+='<option value="'+i+'">'+esc(D.products[i].name)+' ('+esc(D.products[i].cat)+')</option>';
+  
+  modal('RECORD STOCK PURCHASE / RESTOCK',
+    '<div class="form-grid">'+
+      '<div class="field full"><label>SELECT PRODUCT</label><select id="ri">'+opts+'</select></div>'+
+      '<div class="field full"><label>PURCHASE TYPE</label><select id="rt" onchange="adjustRestockForm()">'+
+        '<option value="refill">Gas Refill (Refilled Empty Containers)</option>'+
+        '<option value="complete">Complete Gas Purchase (New Cylinder + Gas)</option>'+
+        '<option value="accessory">Accessory / Item Units</option>'+
+      '</select></div>'+
+      '<div class="field"><label>QUANTITY BOUGHT</label><input id="rqty" type="number" value="1" min="1"></div>'+
+      '<div class="field"><label>BUYING PRICE PER UNIT (KSh)</label><input id="rc" type="number" value="0"></div>'+
+      '<div class="field full"><label>SUPPLIER / RECEIPT NOTE</label><input id="rs" placeholder="e.g. Pro-Gas Supplier, Invoice #102"></div>'+
+    '</div>',
+    '<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE PURCHASES</button>'
+  );
+}
+
 function saveRestock(){
-  var p=D.products[+$('ri').value],f=+$('rf').value||0,e=+$('re').value||0,q=+$('rq').value||0,c=+$('rc').value||0;
-  if(f<0||e<0||q<0)return alert('Stock additions cannot be negative.');
-  p.full=(Number(p.full)||0)+f;
-  p.empty=(Number(p.empty)||0)+e;
-  p.stock=(Number(p.stock)||0)+q;
-  if(c>0)p.buy=c;
+  var p = D.products[+$('ri').value];
+  var pType = $('rt').value;
+  var qty = +$('rqty').value || 0;
+  var unitCost = +$('rc').value || 0;
   
-  var totalCost = (c > 0 ? c : p.buy) * (p.cat == 'Accessory' ? q : (f + e));
+  if(qty <= 0) return alert('Quantity must be at least 1.');
   
+  var fAdded = 0, eAdded = 0, qAdded = 0, pTypeTitle = "";
+
+  if(pType === 'refill'){
+    pTypeTitle = "Refilled Empty Containers";
+    fAdded = qty;
+    p.full = (Number(p.full)||0) + qty;
+    if(Number(p.empty) >= qty){
+      p.empty = Number(p.empty) - qty;
+    } else {
+      p.empty = 0;
+    }
+  } else if(pType === 'complete'){
+    pTypeTitle = "New Complete Cylinder Purchase";
+    fAdded = qty;
+    p.full = (Number(p.full)||0) + qty;
+  } else {
+    pTypeTitle = "Accessory / Item Purchase";
+    qAdded = qty;
+    p.stock = (Number(p.stock)||0) + qty;
+  }
+
+  if(unitCost > 0) p.buy = unitCost;
+  var totalCost = (unitCost > 0 ? unitCost : p.buy) * qty;
+
   if(!D.restocks) D.restocks = [];
   D.restocks.push({
+    id: new Date().getTime(),
     dt: now(),
     product: p.name,
-    full: f,
-    empty: e,
-    stock: q,
-    unitCost: c > 0 ? c : p.buy,
+    pType: pTypeTitle,
+    full: fAdded,
+    empty: eAdded,
+    stock: qAdded,
+    unitCost: unitCost > 0 ? unitCost : p.buy,
     totalCost: totalCost,
     note: $('rs').value || 'Restock'
   });
+
   saveData();
   closeModal();
   products();
@@ -337,14 +383,12 @@ function saveSale(){
   if(Math.round((cash+kcb+credit)*100)!=Math.round(total*100))return alert('Cash + KCB PayBill + Credit must equal '+money(total)+'.');
   if(credit&&!cust)return alert('Select a customer for credit sales.');
 
-  // Deduct Inventory
   for(i=0;i<CART.length;i++){
     x=CART[i];
     if(x.p.cat=='Accessory'){x.p.stock-=x.q}
     else{ x.p.full-=x.q;if(x.mode=='returned')x.p.empty=(Number(x.p.empty)||0)+x.q; }
   }
 
-  // Realized Profit Today
   var paidAmount = cash + kcb;
   var realizedProfitToday = total > 0 ? (fullProfit * (paidAmount / total)) : 0;
   var creditProfitPostponed = fullProfit - realizedProfitToday;
@@ -386,7 +430,6 @@ function reports(){
   var total=0, profit=0, exp=0, cash=0, kcb=0, credit=0, i, s;
   var todayRows='', allRows='';
   
-  // Sales calculation
   for(i=0; i<D.sales.length; i++){
     s=D.sales[i];
     var isToday = (s.dt && s.dt.substr(0,10) === day);
@@ -418,7 +461,7 @@ function reports(){
   if(!todayRows) todayRows = '<tr><td colspan="9" class="empty">No sales recorded today yet.</td></tr>';
   if(!allRows) allRows = '<tr><td colspan="9" class="empty">No sales recorded yet.</td></tr>';
   
-  // Restocks / Stock Purchases calculation for TODAY
+  // Stock Purchases / Restocks Section
   var stockRows='', todayStockCost=0, todayStockCount=0;
   if(D.restocks){
     for(i=0; i<D.restocks.length; i++){
@@ -426,7 +469,8 @@ function reports(){
       if(r.dt && r.dt.substr(0,10) === day){
         todayStockCost += Number(r.totalCost || 0);
         todayStockCount++;
-        stockRows = '<tr><td>'+r.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(r.product)+'</td><td>'+(r.full||0)+'</td><td>'+(r.empty||0)+'</td><td>'+(r.stock||0)+'</td><td>'+money(r.unitCost)+'</td><td>'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td></tr>' + stockRows;
+        var typeBadge = r.pType || 'Restock';
+        stockRows = '<tr><td>'+r.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(r.product)+'</td><td><b>'+esc(typeBadge)+'</b></td><td>'+(r.full||r.stock||0)+'</td><td>'+money(r.unitCost)+'</td><td>'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td><td><button class="btn small" onclick="editRestock('+i+')">EDIT</button> <button class="btn small danger" onclick="deleteRestock('+i+')">DELETE</button></td></tr>' + stockRows;
       }
     }
   }
@@ -459,7 +503,7 @@ function reports(){
         card('TODAY PURCHASES COST',money(todayStockCost),'amber')+
         card('PURCHASE ENTRIES',todayStockCount)+
       '</div>'+
-      '<div class="table-responsive"><table><tr><th>DATE</th><th>PRODUCT</th><th>FULL ADDED</th><th>EMPTY ADDED</th><th>UNITS ADDED</th><th>UNIT COST</th><th>TOTAL COST</th><th>NOTE / SUPPLIER</th></tr>'+stockRows+'</table></div>'+
+      '<div class="table-responsive"><table><tr><th>DATE</th><th>PRODUCT</th><th>PURCHASE TYPE</th><th>QTY ADDED</th><th>UNIT COST</th><th>TOTAL COST</th><th>NOTE / SUPPLIER</th><th>ACTION</th></tr>'+stockRows+'</table></div>'+
     '</div>'+
 
     '<div class="panel">'+
@@ -468,6 +512,58 @@ function reports(){
       '<div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>ITEMS SOLD</th><th>TOTAL</th><th>REALIZED PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+allRows+'</table></div>'+
     '</div>'
   );
+}
+
+function editRestock(idx){
+  var r = D.restocks[idx];
+  modal('EDIT STOCK PURCHASE',
+    '<div class="form-grid">'+
+      '<div class="field full"><label>PRODUCT NAME</label><input id="er_p" value="'+esc(r.product)+'" disabled></div>'+
+      '<div class="field full"><label>PURCHASE TYPE</label><input id="er_t" value="'+esc(r.pType||'Restock')+'" disabled></div>'+
+      '<div class="field"><label>QUANTITY ADDED</label><input id="er_q" type="number" value="'+(r.full||r.stock||0)+'"></div>'+
+      '<div class="field"><label>UNIT COST (KSh)</label><input id="er_u" type="number" value="'+(Number(r.unitCost)||0)+'"></div>'+
+      '<div class="field full"><label>NOTE / SUPPLIER</label><input id="er_n" value="'+esc(r.note||'')+ '"></div>'+
+    '</div>',
+    '<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedRestock('+idx+')">UPDATE PURCHASE</button>'
+  );
+}
+
+function saveEditedRestock(idx){
+  var r = D.restocks[idx];
+  var newQty = +$('er_q').value || 0;
+  var newUnitCost = +$('er_u').value || 0;
+  
+  if(newQty <= 0) return alert('Quantity must be at least 1.');
+
+  r.full = newQty;
+  r.unitCost = newUnitCost;
+  r.totalCost = newQty * newUnitCost;
+  r.note = $('er_n').value;
+
+  saveData();
+  closeModal();
+  reports();
+}
+
+function deleteRestock(idx){
+  if(!confirm('Are you sure you want to delete this purchase entry? This will remove the recorded stock.')) return;
+  var r = D.restocks[idx];
+  
+  // Find product and reduce quantity
+  for(var i=0; i<D.products.length; i++){
+    if(D.products[i].name === r.product){
+      if(r.stock > 0){
+        D.products[i].stock = Math.max(0, (Number(D.products[i].stock)||0) - r.stock);
+      } else if(r.full > 0){
+        D.products[i].full = Math.max(0, (Number(D.products[i].full)||0) - r.full);
+      }
+      break;
+    }
+  }
+
+  D.restocks.splice(idx, 1);
+  saveData();
+  reports();
 }
 
 function printTodayReport(){
@@ -519,7 +615,7 @@ function printStockPurchaseReport(){
       if(r.dt && r.dt.substr(0,10) === day){
         totalCost += Number(r.totalCost || 0);
         count++;
-        rowsHtml += '<tr><td>'+r.dt.substr(11,5)+'</td><td>'+esc(r.product)+'</td><td align="center">'+(r.full||0)+'</td><td align="center">'+(r.empty||0)+'</td><td align="center">'+(r.stock||0)+'</td><td align="right">'+money(r.unitCost)+'</td><td align="right">'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td></tr>';
+        rowsHtml += '<tr><td>'+r.dt.substr(11,5)+'</td><td>'+esc(r.product)+'</td><td><b>'+esc(r.pType||'Restock')+'</b></td><td align="center">'+(r.full||r.stock||0)+'</td><td align="right">'+money(r.unitCost)+'</td><td align="right">'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td></tr>';
       }
     }
   }
@@ -528,8 +624,8 @@ function printStockPurchaseReport(){
   w.document.write('<html><head><title>Today Stock Purchases - '+day+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;color:#000}h2,h4{margin:0 0 5px}.center{text-align:center}.line{border-bottom:2px solid #000;margin:15px 0}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ccc;padding:6px;text-align:left;font-size:11px}th{background:#f0f0f0}</style></head><body>');
   w.document.write('<div class="center"><h2>'+esc(D.settings.business)+'</h2><h4>DAILY STOCK PURCHASES REPORT</h4>Date: <b>'+day+'</b></div>');
   w.document.write('<div class="line"></div>');
-  w.document.write('<table><thead><tr><th>Time</th><th>Product</th><th>Full Added</th><th>Empty Added</th><th>Units Added</th><th align="right">Unit Cost</th><th align="right">Total Cost</th><th>Supplier / Note</th></tr></thead><tbody>');
-  w.document.write(rowsHtml || '<tr><td colspan="8" align="center">No stock purchases recorded today.</td></tr>');
+  w.document.write('<table><thead><tr><th>Time</th><th>Product</th><th>Purchase Type</th><th>Qty Added</th><th align="right">Unit Cost</th><th align="right">Total Cost</th><th>Supplier / Note</th></tr></thead><tbody>');
+  w.document.write(rowsHtml || '<tr><td colspan="7" align="center">No stock purchases recorded today.</td></tr>');
   w.document.write('</tbody></table>');
   w.document.write('<br><div><b>Total Purchase Expenditure Today:</b> '+money(totalCost)+'<br><b>Total Stock Entries:</b> '+count+'</div>');
   w.document.write('<br><div class="center" style="font-size:10px;">Generated on '+new Date().toLocaleString()+'</div>');
