@@ -158,6 +158,7 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function money(n){n=Number(n)||0;return 'KSh '+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
 function pad2(n){return n<10?'0'+n:''+n}
 function now(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
 function findCustomer(id){var i;for(i=0;i<D.customers.length;i++){if(String(D.customers[i].id)==String(id))return D.customers[i]}return null}
 
 function toggleMenu(){
@@ -195,13 +196,13 @@ function card(label,value,cls){return '<div class="card"><div class="label">'+la
 
 function dashboard(){
   window.currentPage = 'dashboard';
-  var d=new Date(),day=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()),sales=0,profit=0,cash=0,kcb=0,credit=0,expense=0,debt=0,full=0,empty=0,low=0,i,x,q;
+  var day=todayStr(),sales=0,profit=0,cash=0,kcb=0,credit=0,expense=0,debt=0,full=0,empty=0,low=0,i,x,q;
   for(i=0;i<D.sales.length;i++){x=D.sales[i];if(x.dt.substr(0,10)==day){sales+=Number(x.total)||0;profit+=Number(x.profit)||0;cash+=Number(x.cash)||0;kcb+=Number(x.kcb)||0;credit+=Number(x.credit)||0}}
   for(i=0;i<D.expenses.length;i++){x=D.expenses[i];if(x.dt.substr(0,10)==day)expense+=Number(x.amount)||0}
   for(i=0;i<D.customers.length;i++)debt+=Number(D.customers[i].debt)||0;
   for(i=0;i<D.products.length;i++){x=D.products[i];full+=Number(x.full)||0;empty+=Number(x.empty)||0;q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;if(Number(x.low)>0&&q<=Number(x.low))low++}
   var net=profit-expense;
-  var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick-grid"><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS</div><div class="quickText">Review sales, profit and export to Excel</div></div></div></div>';
+  var quick='<div class="panel"><div class="panelTitle">QUICK ACTIONS</div><div class="panelSub">Common tasks for your gas shop</div><div class="quick-grid"><div class="quick" onclick="sale()"><div class="quickTitle">NEW SALE</div><div class="quickText">Sell gas, complete gas, regulators, burners</div></div><div class="quick" onclick="products()"><div class="quickTitle">STOCK & PRODUCTS</div><div class="quickText">Manage prices, stock and cylinder balances</div></div><div class="quick" onclick="reports()"><div class="quickTitle">REPORTS & PRINT</div><div class="quickText">Review daily sales, stock purchases & print reports</div></div></div></div>';
   var stockRows='';for(i=0;i<D.products.length&&i<6;i++){x=D.products[i];q=x.cat=='Accessory'?Number(x.stock)||0:Number(x.full)||0;stockRows+='<tr><td>'+esc(x.name)+'</td><td>'+esc(x.cat)+'</td><td>'+q+'</td><td>'+status(x)+'</td></tr>'}
   if(!stockRows)stockRows='<tr><td colspan="4" class="empty">No products yet. Add your products in Stock & Products.</td></tr>';
   shell('DASHBOARD','Today at a glance', '<div class="cards">'+card('TODAY SALES',money(sales))+card('TODAY REALIZED PROFIT',money(profit),'green')+card('TODAY CASH',money(cash))+card('TODAY KCB PAYBILL',money(kcb))+'</div><div class="cards">'+card('TODAY CREDIT ISSUED',money(credit),'amber')+card('TOTAL UNPAID DEBT',money(debt),'red')+card('FULL CYLINDERS',full)+card('EMPTY CYLINDERS',empty)+'</div>'+quick+'<div class="split"><div class="panel"><div class="panelTitle">TODAY SUMMARY</div><div class="panelSub">Profit after expenses</div><div class="summary"><div class="summaryRow">SALES<b>'+money(sales)+'</b></div><div class="summaryRow">REALIZED PROFIT<b>'+money(profit)+'</b></div><div class="summaryRow">EXPENSES<b>'+money(expense)+'</b></div><div class="summaryRow">NET PROFIT<b>'+money(net)+'</b></div></div></div><div class="panel"><div class="panelTitle">STOCK SNAPSHOT</div><div class="panelSub">First six products</div><div class="table-responsive"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr>'+stockRows+'</table></div></div></div>');
@@ -213,15 +214,39 @@ function products(){
   window.currentPage = 'products';
   var rows='',i,p,q;for(i=0;i<D.products.length;i++){p=D.products[i];q=p.cat=='Accessory'?Number(p.stock)||0:Number(p.full)||0;rows+='<tr><td>'+esc(p.name)+'</td><td>'+esc(p.cat)+'</td><td>'+money(p.buy)+'</td><td>'+money(p.sell)+'</td><td>'+q+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.full)||0))+'</td><td>'+(p.cat=='Accessory'?'-':(Number(p.empty)||0))+'</td><td>'+status(p)+'</td><td><button class="btn small" onclick="editProduct('+i+')">EDIT</button></td></tr>'}
   if(!rows)rows='<tr><td colspan="9" class="empty">No products added yet.</td></tr>';
-  shell('STOCK & PRODUCTS','Control products, prices and stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / ADJUST</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Refill and Complete Gas use FULL / EMPTY cylinders. Accessories use standard item stock.</div><div class="panel"><div class="table-responsive"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAIL</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div></div>')
+  shell('STOCK & PRODUCTS','Control products, prices and stock','<div class="toolbar"><button class="btn primary" onclick="addProduct()">ADD PRODUCT</button><button class="btn" onclick="restock()">RESTOCK / PURCHASES</button><button class="btn" onclick="backup()">BACKUP DATA</button></div><div class="notice"><strong>Gas tracking:</strong> Refill and Complete Gas use FULL / EMPTY cylinders. Accessories use standard item stock.</div><div class="panel"><div class="table-responsive"><table><tr><th>PRODUCT</th><th>CATEGORY</th><th>BUY</th><th>SELL</th><th>AVAIL</th><th>FULL</th><th>EMPTY</th><th>STATUS</th><th>ACTION</th></tr>'+rows+'</table></div></div>')
 }
 
 function addProduct(){productModal(-1)}
 function editProduct(i){productModal(i)}
 function productModal(idx){var p=idx<0?{name:'',cat:'Gas Refill',buy:0,sell:0,stock:0,full:0,empty:0,low:2}:D.products[idx];modal(idx<0?'ADD PRODUCT':'EDIT PRODUCT','<div class="form-grid"><div class="field full"><label>PRODUCT NAME</label><input id="pn" value="'+esc(p.name)+'"></div><div class="field"><label>CATEGORY</label><select id="pc"><option '+(p.cat=='Gas Refill'?'selected':'')+'>Gas Refill</option><option '+(p.cat=='Complete Gas'?'selected':'')+'>Complete Gas</option><option '+(p.cat=='Accessory'?'selected':'')+'>Accessory</option></select></div><div class="field"><label>LOW STOCK LEVEL</label><input id="pl" type="number" value="'+(Number(p.low)||0)+'"></div><div class="field"><label>BUYING PRICE</label><input id="pb" type="number" value="'+(Number(p.buy)||0)+'"></div><div class="field"><label>SELLING PRICE</label><input id="ps" type="number" value="'+(Number(p.sell)||0)+'"></div><div class="field"><label>ACCESSORY STOCK</label><input id="pq" type="number" value="'+(Number(p.stock)||0)+'"></div><div class="field"><label>FULL CYLINDERS</label><input id="pf" type="number" value="'+(Number(p.full)||0)+'"></div><div class="field"><label>EMPTY CYLINDERS</label><input id="pe" type="number" value="'+(Number(p.empty)||0)+'"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveProduct('+idx+')">SAVE PRODUCT</button>')}
 function saveProduct(idx){var p={name:$('pn').value,cat:$('pc').value,buy:+$('pb').value||0,sell:+$('ps').value||0,stock:+$('pq').value||0,full:+$('pf').value||0,empty:+$('pe').value||0,low:+$('pl').value||0};if(!p.name)return alert('Product name is required.');if(p.sell<0||p.buy<0)return alert('Prices cannot be negative.');if(idx<0)D.products.push(p);else D.products[idx]=p;saveData();closeModal();products()}
-function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RESTOCK / ADJUST STOCK','<div class="form-grid"><div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS ADD</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS ADD</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS ADD</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / NOTE</label><input id="rs"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE ADJUSTMENT</button>')}
-function saveRestock(){var p=D.products[+$('ri').value],f=+$('rf').value||0,e=+$('re').value||0,q=+$('rq').value||0,c=+$('rc').value||0;if(f<0||e<0||q<0)return alert('Stock additions cannot be negative.');p.full=(Number(p.full)||0)+f;p.empty=(Number(p.empty)||0)+e;p.stock=(Number(p.stock)||0)+q;if(c>0)p.buy=c;D.restocks.push({dt:now(),product:p.name,full:f,empty:e,stock:q,cost:c,note:$('rs').value});saveData();closeModal();products()}
+function restock(){var opts='',i;if(!D.products.length)return alert('Add a product first.');for(i=0;i<D.products.length;i++)opts+='<option value="'+i+'">'+esc(D.products[i].name)+'</option>';modal('RECORD STOCK PURCHASE / RESTOCK','<div class="form-grid"><div class="field full"><label>PRODUCT</label><select id="ri">'+opts+'</select></div><div class="field"><label>FULL CYLINDERS BOUGHT</label><input id="rf" type="number" value="0"></div><div class="field"><label>EMPTY CYLINDERS BOUGHT</label><input id="re" type="number" value="0"></div><div class="field"><label>ACCESSORY UNITS BOUGHT</label><input id="rq" type="number" value="0"></div><div class="field"><label>NEW BUYING PRICE (PER UNIT)</label><input id="rc" type="number" value="0"></div><div class="field full"><label>SUPPLIER / RECEIPT NOTE</label><input id="rs" placeholder="e.g. K-Gas Supplier, Invoice #102"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveRestock()">SAVE STOCK PURCHASE</button>')}
+function saveRestock(){
+  var p=D.products[+$('ri').value],f=+$('rf').value||0,e=+$('re').value||0,q=+$('rq').value||0,c=+$('rc').value||0;
+  if(f<0||e<0||q<0)return alert('Stock additions cannot be negative.');
+  p.full=(Number(p.full)||0)+f;
+  p.empty=(Number(p.empty)||0)+e;
+  p.stock=(Number(p.stock)||0)+q;
+  if(c>0)p.buy=c;
+  
+  var totalCost = (c > 0 ? c : p.buy) * (p.cat == 'Accessory' ? q : (f + e));
+  
+  if(!D.restocks) D.restocks = [];
+  D.restocks.push({
+    dt: now(),
+    product: p.name,
+    full: f,
+    empty: e,
+    stock: q,
+    unitCost: c > 0 ? c : p.buy,
+    totalCost: totalCost,
+    note: $('rs').value || 'Restock'
+  });
+  saveData();
+  closeModal();
+  products();
+}
 
 function customers(){window.currentPage = 'customers';var rows='',i,c;for(i=0;i<D.customers.length;i++){c=D.customers[i];rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td><button class="btn small" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button></td></tr>'}if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><div class="table-responsive"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div></div>')}
 function addCustomer(){modal('ADD CUSTOMER','<div class="form-grid"><div class="field full"><label>NAME</label><input id="cn"></div><div class="field full"><label>PHONE</label><input id="cp"></div><div class="field full"><label>LOCATION</label><input id="cl"></div><div class="field full"><label>PREVIOUS OUTSTANDING DEBT (KSh)</label><input id="cd" type="number" value="0" placeholder="Enter old balance before this system"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
@@ -233,7 +258,7 @@ function saveCustomer(){
     phone:$('cp').value,
     location:$('cl').value,
     debt: prevDebt,
-    origProfit: 0, // Previous debt has 0 unrealized product profit
+    origProfit: 0,
     origDebtTotal: prevDebt
   };
   if(!c.name)return alert('Customer name is required.');
@@ -319,7 +344,7 @@ function saveSale(){
     else{ x.p.full-=x.q;if(x.mode=='returned')x.p.empty=(Number(x.p.empty)||0)+x.q; }
   }
 
-  // Realized Profit Today = Profit on Cash/PayBill portion ONLY
+  // Realized Profit Today
   var paidAmount = cash + kcb;
   var realizedProfitToday = total > 0 ? (fullProfit * (paidAmount / total)) : 0;
   var creditProfitPostponed = fullProfit - realizedProfitToday;
@@ -356,20 +381,163 @@ function saveExpense(){var a=+$('ea').value||0;if(a<=0)return alert('Enter an am
 
 function reports(){
   window.currentPage = 'reports';
-  var total=0,profit=0,exp=0,cash=0,kcb=0,credit=0,i,s,rows='';
-  for(i=0;i<D.sales.length;i++){
+  var day = todayStr();
+  var todayTotal=0, todayProfit=0, todayCash=0, todayKcb=0, todayCredit=0, todayCount=0;
+  var total=0, profit=0, exp=0, cash=0, kcb=0, credit=0, i, s;
+  var todayRows='', allRows='';
+  
+  // Sales calculation
+  for(i=0; i<D.sales.length; i++){
     s=D.sales[i];
-    total+=Number(s.total)||0;
-    profit+=Number(s.profit)||0;
-    cash+=Number(s.cash)||0;
-    kcb+=Number(s.kcb)||0;
-    credit+=Number(s.credit)||0;
+    var isToday = (s.dt && s.dt.substr(0,10) === day);
     var itemStr = s.items ? esc(s.items) : '-';
-    rows+='<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td><b>'+itemStr+'</b></td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>';
+    
+    total += Number(s.total)||0;
+    profit += Number(s.profit)||0;
+    cash += Number(s.cash)||0;
+    kcb += Number(s.kcb)||0;
+    credit += Number(s.credit)||0;
+    
+    var rowHtml = '<tr><td>'+s.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(s.customer)+'</td><td><b>'+itemStr+'</b></td><td>'+money(s.total)+'</td><td>'+money(s.profit)+'</td><td>'+money(s.cash)+'</td><td>'+money(s.kcb)+'</td><td>'+money(s.credit)+'</td><td><button class="btn small" onclick="editSale('+i+')">EDIT</button> <button class="btn small primary" onclick="printSale('+i+')">PRINT</button></td></tr>';
+    
+    allRows = rowHtml + allRows;
+    
+    if(isToday){
+      todayTotal += Number(s.total)||0;
+      todayProfit += Number(s.profit)||0;
+      todayCash += Number(s.cash)||0;
+      todayKcb += Number(s.kcb)||0;
+      todayCredit += Number(s.credit)||0;
+      todayCount++;
+      todayRows = rowHtml + todayRows;
+    }
   }
-  for(i=0;i<D.expenses.length;i++)exp+=Number(D.expenses[i].amount)||0;
-  if(!rows)rows='<tr><td colspan="9" class="empty">No sales recorded yet.</td></tr>';
-  shell('REPORTS','Sales, profit, expenses and payment breakdown','<div class="toolbar"><button class="btn primary" onclick="exportToExcel()">EXPORT TO EXCEL (.CSV)</button><button class="btn" onclick="backup()">BACKUP JSON</button></div><div class="cards">'+card('TOTAL SALES',money(total))+card('REALIZED PROFIT',money(profit),'green')+card('EXPENSES',money(exp),'amber')+card('NET PROFIT',money(profit-exp),'green')+'</div><div class="panel"><div class="panelTitle">PAYMENT BREAKDOWN</div><div class="summary"><div class="summaryRow">CASH<b>'+money(cash)+'</b></div><div class="summaryRow">KCB PAYBILL<b>'+money(kcb)+'</b></div><div class="summaryRow">CREDIT ISSUED<b>'+money(credit)+'</b></div><div class="summaryRow">COUNT<b>'+D.sales.length+'</b></div></div></div><div class="panel"><div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>ITEMS SOLD</th><th>TOTAL</th><th>REALIZED PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+rows+'</table></div></div>');
+  
+  for(i=0;i<D.expenses.length;i++) exp+=Number(D.expenses[i].amount)||0;
+  
+  if(!todayRows) todayRows = '<tr><td colspan="9" class="empty">No sales recorded today yet.</td></tr>';
+  if(!allRows) allRows = '<tr><td colspan="9" class="empty">No sales recorded yet.</td></tr>';
+  
+  // Restocks / Stock Purchases calculation for TODAY
+  var stockRows='', todayStockCost=0, todayStockCount=0;
+  if(D.restocks){
+    for(i=0; i<D.restocks.length; i++){
+      var r = D.restocks[i];
+      if(r.dt && r.dt.substr(0,10) === day){
+        todayStockCost += Number(r.totalCost || 0);
+        todayStockCount++;
+        stockRows = '<tr><td>'+r.dt.substr(0,16).replace('T',' ')+'</td><td>'+esc(r.product)+'</td><td>'+(r.full||0)+'</td><td>'+(r.empty||0)+'</td><td>'+(r.stock||0)+'</td><td>'+money(r.unitCost)+'</td><td>'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td></tr>' + stockRows;
+      }
+    }
+  }
+  if(!stockRows) stockRows = '<tr><td colspan="8" class="empty">No stock purchases recorded today.</td></tr>';
+
+  shell('REPORTS & PRINTING','Daily sales, complete report history and stock purchases',
+    '<div class="toolbar">'+
+      '<button class="btn primary" onclick="printTodayReport()">PRINT TODAY\'S REPORT</button>'+
+      '<button class="btn" onclick="printStockPurchaseReport()">PRINT TODAY\'S STOCK PURCHASES</button>'+
+      '<button class="btn" onclick="exportToExcel()">EXPORT TO EXCEL (.CSV)</button>'+
+      '<button class="btn" onclick="backup()">BACKUP JSON</button>'+
+    '</div>'+
+    
+    '<div class="panel">'+
+      '<div class="panelTitle">TODAY\'S SALES SUMMARY ('+day+')</div>'+
+      '<div class="panelSub">Sales transactions recorded today</div>'+
+      '<div class="cards">'+
+        card('TODAY SALES',money(todayTotal))+
+        card('TODAY REALIZED PROFIT',money(todayProfit),'green')+
+        card('CASH COLLECTED',money(todayCash))+
+        card('KCB PAYBILL',money(todayKcb))+
+      '</div>'+
+      '<div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>ITEMS SOLD</th><th>TOTAL</th><th>REALIZED PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+todayRows+'</table></div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panelTitle">TODAY\'S STOCK PURCHASES & RESTOCKS</div>'+
+      '<div class="panelSub">Inventory items and cylinders purchased today</div>'+
+      '<div class="cards">'+
+        card('TODAY PURCHASES COST',money(todayStockCost),'amber')+
+        card('PURCHASE ENTRIES',todayStockCount)+
+      '</div>'+
+      '<div class="table-responsive"><table><tr><th>DATE</th><th>PRODUCT</th><th>FULL ADDED</th><th>EMPTY ADDED</th><th>UNITS ADDED</th><th>UNIT COST</th><th>TOTAL COST</th><th>NOTE / SUPPLIER</th></tr>'+stockRows+'</table></div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panelTitle">ALL-TIME SALES REPORT</div>'+
+      '<div class="panelSub">Complete history of all sales transactions</div>'+
+      '<div class="table-responsive"><table><tr><th>DATE</th><th>CUSTOMER</th><th>ITEMS SOLD</th><th>TOTAL</th><th>REALIZED PROFIT</th><th>CASH</th><th>KCB</th><th>CREDIT</th><th>ACTION</th></tr>'+allRows+'</table></div>'+
+    '</div>'
+  );
+}
+
+function printTodayReport(){
+  var day = todayStr();
+  var sales=0, profit=0, cash=0, kcb=0, credit=0, count=0, i, s;
+  var rowsHtml = '';
+
+  for(i=0; i<D.sales.length; i++){
+    s = D.sales[i];
+    if(s.dt && s.dt.substr(0,10) === day){
+      sales += Number(s.total)||0;
+      profit += Number(s.profit)||0;
+      cash += Number(s.cash)||0;
+      kcb += Number(s.kcb)||0;
+      credit += Number(s.credit)||0;
+      count++;
+      rowsHtml += '<tr><td>'+s.dt.substr(11,5)+'</td><td>'+esc(s.customer)+'</td><td>'+esc(s.items||'-')+'</td><td align="right">'+money(s.total)+'</td><td align="right">'+money(s.cash)+'</td><td align="right">'+money(s.kcb)+'</td><td align="right">'+money(s.credit)+'</td></tr>';
+    }
+  }
+
+  var w=window.open('','_blank','width=800,height=700');
+  w.document.write('<html><head><title>Today Sales Report - '+day+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;color:#000}h2,h4{margin:0 0 5px}.center{text-align:center}.line{border-bottom:2px solid #000;margin:15px 0}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ccc;padding:6px;text-align:left;font-size:11px}th{background:#f0f0f0}.summary-box{display:flex;gap:20px;margin-top:15px;background:#f9f9f9;padding:10px;border:1px solid #ddd}</style></head><body>');
+  w.document.write('<div class="center"><h2>'+esc(D.settings.business)+'</h2><h4>DAILY SALES REPORT</h4>Date: <b>'+day+'</b></div>');
+  w.document.write('<div class="line"></div>');
+  w.document.write('<table><thead><tr><th>Time</th><th>Customer</th><th>Items Sold</th><th align="right">Total</th><th align="right">Cash</th><th align="right">KCB</th><th align="right">Credit</th></tr></thead><tbody>');
+  w.document.write(rowsHtml || '<tr><td colspan="7" align="center">No sales recorded today.</td></tr>');
+  w.document.write('</tbody></table>');
+  w.document.write('<div class="summary-box">');
+  w.document.write('<div><b>Total Sales:</b> '+money(sales)+'<br><b>Realized Profit:</b> '+money(profit)+'</div>');
+  w.document.write('<div><b>Cash Collected:</b> '+money(cash)+'<br><b>KCB PayBill:</b> '+money(kcb)+'</div>');
+  w.document.write('<div><b>Credit Issued:</b> '+money(credit)+'<br><b>Total Orders:</b> '+count+'</div>');
+  w.document.write('</div>');
+  w.document.write('<br><div class="center" style="font-size:10px;">Generated on '+new Date().toLocaleString()+'</div>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+  w.close();
+}
+
+function printStockPurchaseReport(){
+  var day = todayStr();
+  var totalCost = 0, count = 0, i;
+  var rowsHtml = '';
+
+  if(D.restocks){
+    for(i=0; i<D.restocks.length; i++){
+      var r = D.restocks[i];
+      if(r.dt && r.dt.substr(0,10) === day){
+        totalCost += Number(r.totalCost || 0);
+        count++;
+        rowsHtml += '<tr><td>'+r.dt.substr(11,5)+'</td><td>'+esc(r.product)+'</td><td align="center">'+(r.full||0)+'</td><td align="center">'+(r.empty||0)+'</td><td align="center">'+(r.stock||0)+'</td><td align="right">'+money(r.unitCost)+'</td><td align="right">'+money(r.totalCost)+'</td><td>'+esc(r.note||'')+'</td></tr>';
+      }
+    }
+  }
+
+  var w=window.open('','_blank','width=800,height=700');
+  w.document.write('<html><head><title>Today Stock Purchases - '+day+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;color:#000}h2,h4{margin:0 0 5px}.center{text-align:center}.line{border-bottom:2px solid #000;margin:15px 0}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ccc;padding:6px;text-align:left;font-size:11px}th{background:#f0f0f0}</style></head><body>');
+  w.document.write('<div class="center"><h2>'+esc(D.settings.business)+'</h2><h4>DAILY STOCK PURCHASES REPORT</h4>Date: <b>'+day+'</b></div>');
+  w.document.write('<div class="line"></div>');
+  w.document.write('<table><thead><tr><th>Time</th><th>Product</th><th>Full Added</th><th>Empty Added</th><th>Units Added</th><th align="right">Unit Cost</th><th align="right">Total Cost</th><th>Supplier / Note</th></tr></thead><tbody>');
+  w.document.write(rowsHtml || '<tr><td colspan="8" align="center">No stock purchases recorded today.</td></tr>');
+  w.document.write('</tbody></table>');
+  w.document.write('<br><div><b>Total Purchase Expenditure Today:</b> '+money(totalCost)+'<br><b>Total Stock Entries:</b> '+count+'</div>');
+  w.document.write('<br><div class="center" style="font-size:10px;">Generated on '+new Date().toLocaleString()+'</div>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+  w.close();
 }
 
 function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="form-grid"><div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field full"><label>ITEMS SOLD</label><input id="es_items" value="'+esc(s.items||'')+ '"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>REALIZED PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
@@ -472,7 +640,7 @@ function closeModal(){$('modal').className='modal hidden'}
       <button class="navBtn" onclick="products()">STOCK & PRODUCTS</button>
       <button class="navBtn" onclick="customers()">CUSTOMERS & CREDIT</button>
       <button class="navBtn" onclick="expenses()">EXPENSES</button>
-      <button class="navBtn" onclick="reports()">REPORTS</button>
+      <button class="navBtn" onclick="reports()">REPORTS & PRINT</button>
       <button class="navBtn" onclick="settings()">SETTINGS</button>
       
       <div class="sideBottom">
