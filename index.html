@@ -235,33 +235,52 @@ function payDebt(id){
 function savePayment(id){
   var c=findCustomer(id), a=+$('pa').value||0;
   if(a<=0 || a>Number(c.debt)) return alert('Enter an amount not greater than the debt.');
-  
-  // Realize profit today based on the percentage of debt cleared
-  var profitRealizedToday = 0;
-  var currentTotalDebt = Number(c.debt) || 0;
-  var totalUnrealizedProfit = Number(c.origProfit) || 0;
 
-  if (currentTotalDebt > 0 && totalUnrealizedProfit > 0) {
-    var ratio = a / currentTotalDebt;
-    profitRealizedToday = totalUnrealizedProfit * ratio;
-    c.origProfit = Math.max(0, totalUnrealizedProfit - profitRealizedToday);
+  // CREDIT PROFIT RULE: profit is realized ONLY when money is actually paid.
+  // Allocate payment FIFO across this customer's unpaid credit sales.
+  var remainingPayment=a, profitRealizedToday=0, sales=D.sales||[], j;
+
+  for(j=0;j<sales.length && remainingPayment>0;j++){
+    var cs=sales[j];
+    if(cs.type!=='Sale' || String(cs.customer)!==String(c.name)) continue;
+
+    var outstandingCredit=Number(cs.credit)||0;
+    var pendingProfit=Number(cs.pendingCreditProfit)||0;
+    if(outstandingCredit<=0 || pendingProfit<=0) continue;
+
+    var apply=Math.min(remainingPayment,outstandingCredit);
+    var portionProfit=pendingProfit*(apply/outstandingCredit);
+
+    profitRealizedToday+=portionProfit;
+    cs.pendingCreditProfit=Math.max(0,pendingProfit-portionProfit);
+    cs.credit=Math.max(0,outstandingCredit-apply);
+    remainingPayment-=apply;
   }
 
-  c.debt -= a;
+  // Legacy fallback for older records created before transaction-level tracking.
+  if(remainingPayment>0 && Number(c.origProfit)>0){
+    var oldDebt=Number(c.debt)||0, oldProfit=Number(c.origProfit)||0;
+    if(oldDebt>0){
+      var oldApply=Math.min(remainingPayment,oldDebt);
+      profitRealizedToday+=oldProfit*(oldApply/oldDebt);
+      c.origProfit=Math.max(0,oldProfit-profitRealizedToday);
+    }
+  }
 
-  // Append new Debt Payment record to Sales ledger with TODAY'S timestamp and REALIZED PROFIT TODAY
+  c.debt=Math.max(0,(Number(c.debt)||0)-a);
+
   D.sales.push({
-    id: new Date().getTime(),
-    dt: now(),
-    customer: 'Debt Payment - ' + c.name,
-    items: 'Debt Settlement',
-    total: a,
-    profit: profitRealizedToday,
-    cash: $('pm').value=='Cash' ? a : 0,
-    kcb: $('pm').value=='KCB PayBill' ? a : 0,
-    credit: 0,
-    ref: $('pr').value,
-    type: 'Debt Payment'
+    id:new Date().getTime(),
+    dt:now(),
+    customer:'Debt Payment - '+c.name,
+    items:'Debt Settlement',
+    total:a,
+    profit:profitRealizedToday,
+    cash:$('pm').value=='Cash'?a:0,
+    kcb:$('pm').value=='KCB PayBill'?a:0,
+    credit:0,
+    ref:$('pr').value,
+    type:'Debt Payment'
   });
 
   saveData();
@@ -305,14 +324,15 @@ function saveSale(){
     else{ x.p.full-=x.q;if(x.mode=='returned')x.p.empty=(Number(x.p.empty)||0)+x.q; }
   }
 
-  // Realized Profit Today = Profit on Cash/PayBill portion ONLY
-  var paidAmount = cash + kcb;
-  var realizedProfitToday = total > 0 ? (fullProfit * (paidAmount / total)) : 0;
-  var creditProfitPostponed = fullProfit - realizedProfitToday;
+  // PROFIT RULE: only cash + KCB profit is realized now.
+  // Credit profit remains pending until a customer payment is recorded.
+  var paidAmount=cash+kcb;
+  var cashProfitRealized=total>0?(fullProfit*(paidAmount/total)):0;
+  var creditProfitPending=total>0?(fullProfit*(credit/total)):0;
 
-  if(cust && credit > 0){
-    cust.debt = (Number(cust.debt) || 0) + credit;
-    cust.origProfit = (Number(cust.origProfit) || 0) + creditProfitPostponed;
+  if(cust && credit>0){
+    cust.debt=(Number(cust.debt)||0)+credit;
+    cust.origProfit=(Number(cust.origProfit)||0)+creditProfitPending;
   }
 
   var newSaleIndex = D.sales.length;
@@ -322,7 +342,8 @@ function saveSale(){
     customer: cust ? cust.name : 'Walk-in Customer',
     items: itemsText,
     total: total,
-    profit: realizedProfitToday, // Stores ONLY profit collected TODAY
+    profit: cashProfitRealized, // ONLY cash/PayBill profit is realized today
+    pendingCreditProfit: creditProfitPending, // Credit profit waits for payment
     cash: cash,
     kcb: kcb,
     credit: credit,
@@ -359,32 +380,23 @@ function reports(){
 }
 
 function editSale(idx){var s=D.sales[idx];modal('EDIT SALE REPORT','<div class="form-grid"><div class="field full"><label>CUSTOMER NAME</label><input id="es_c" value="'+esc(s.customer)+'"></div><div class="field full"><label>ITEMS SOLD</label><input id="es_items" value="'+esc(s.items||'')+ '"></div><div class="field"><label>CASH AMOUNT</label><input id="es_cash" type="number" value="'+(Number(s.cash)||0)+'"></div><div class="field"><label>KCB PAYBILL</label><input id="es_kcb" type="number" value="'+(Number(s.kcb)||0)+'"></div><div class="field"><label>CREDIT</label><input id="es_cred" type="number" value="'+(Number(s.credit)||0)+'"></div><div class="field"><label>REALIZED PROFIT</label><input id="es_prof" type="number" value="'+(Number(s.profit)||0)+'"></div><div class="field full"><label>REFERENCE / NOTES</label><input id="es_ref" value="'+esc(s.ref||'')+ '"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveEditedSale('+idx+')">UPDATE SALE</button>')}
-function saveEditedSale(idx){var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0;s.customer=$('es_c').value;s.items=$('es_items').value;s.cash=cash;s.kcb=kcb;s.credit=cred;s.total=cash+kcb+cred;s.profit=+$('es_prof').value||0;s.ref=$('es_ref').value;saveData();closeModal();reports()}
+function saveEditedSale(idx){
+  var s=D.sales[idx],cash=+$('es_cash').value||0,kcb=+$('es_kcb').value||0,cred=+$('es_cred').value||0,enteredProfit=+$('es_prof').value||0;
+  s.customer=$('es_c').value;
+  s.items=$('es_items').value;
+  s.cash=cash;
+  s.kcb=kcb;
+  s.credit=cred;
+  s.total=cash+kcb+cred;
 
-function printSale(idx){
-  var s=D.sales[idx];
-  var w=window.open('','_blank','width=400,height=550');
-  w.document.write('<html><head><title>Receipt</title><style>body{font-family:Courier,monospace;font-size:12px;padding:15px;color:#000}.center{text-align:center}.line{border-bottom:1px dashed #000;margin:8px 0}table{width:100%;font-size:12px}td{padding:2px 0}</style></head><body>');
-  w.document.write('<div class="center"><b>'+esc(D.settings.business)+'</b><br>Sales Receipt</div>');
-  w.document.write('<div class="line"></div>');
-  w.document.write('Date: '+s.dt.substr(0,16).replace('T',' ')+'<br>');
-  w.document.write('Customer: '+esc(s.customer)+'<br>');
-  if(s.items)w.document.write('Items: '+esc(s.items)+'<br>');
-  if(s.ref)w.document.write('Ref: '+esc(s.ref)+'<br>');
-  w.document.write('<div class="line"></div>');
-  w.document.write('<table>');
-  w.document.write('<tr><td>TOTAL AMOUNT:</td><td align="right"><b>'+money(s.total)+'</b></td></tr>');
-  w.document.write('<tr><td>Cash:</td><td align="right">'+money(s.cash)+'</td></tr>');
-  w.document.write('<tr><td>KCB PayBill:</td><td align="right">'+money(s.kcb)+'</td></tr>');
-  w.document.write('<tr><td>Credit:</td><td align="right">'+money(s.credit)+'</td></tr>');
-  w.document.write('</table>');
-  w.document.write('<div class="line"></div>');
-  w.document.write('<div class="center">Thank you for your business!</div>');
-  w.document.write('</body></html>');
-  w.document.close();
-  w.focus();
-  w.print();
-  w.close();
+  // Do not allow the unpaid credit portion to appear as realized profit.
+  s.profit=cred>0 ? enteredProfit*((cash+kcb)/s.total) : enteredProfit;
+  if(cred>0 && s.pendingCreditProfit==null) s.pendingCreditProfit=0;
+
+  s.ref=$('es_ref').value;
+  saveData();
+  closeModal();
+  reports();
 }
 
 function exportToExcel(){
