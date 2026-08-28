@@ -230,7 +230,7 @@ function restock(){
   modal('RECORD STOCK PURCHASE / RESTOCK',
     '<div class="form-grid">'+
       '<div class="field full"><label>SELECT PRODUCT</label><select id="ri">'+opts+'</select></div>'+
-      '<div class="field full"><label>PURCHASE TYPE</label><select id="rt" onchange="adjustRestockForm()">'+
+      '<div class="field full"><label>PURCHASE TYPE</label><select id="rt">'+
         '<option value="refill">Gas Refill (Refilled Empty Containers)</option>'+
         '<option value="complete">Complete Gas Purchase (New Cylinder + Gas)</option>'+
         '<option value="accessory">Accessory / Item Units</option>'+
@@ -294,7 +294,21 @@ function saveRestock(){
   products();
 }
 
-function customers(){window.currentPage = 'customers';var rows='',i,c;for(i=0;i<D.customers.length;i++){c=D.customers[i];rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td><button class="btn small" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button></td></tr>'}if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><div class="table-responsive"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div></div>')}
+function customers(){
+  window.currentPage = 'customers';
+  var rows='',i,c;
+  for(i=0;i<D.customers.length;i++){
+    c=D.customers[i];
+    var actionBtn = Number(c.debt) > 0 
+      ? '<button class="btn small primary" onclick="payDebt('+c.id+')">RECEIVE PAYMENT</button>' 
+      : '<span class="badge ok">NO DEBT</span>';
+      
+    rows+='<tr><td>'+esc(c.name)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.location)+'</td><td>'+money(c.debt)+'</td><td>'+actionBtn+'</td></tr>';
+  }
+  if(!rows)rows='<tr><td colspan="5" class="empty">No customers yet.</td></tr>';
+  shell('CUSTOMERS & CREDIT','Customer balances and payments','<div class="toolbar"><button class="btn primary" onclick="addCustomer()">ADD CUSTOMER</button></div><div class="panel"><div class="table-responsive"><table><tr><th>NAME</th><th>PHONE</th><th>LOCATION</th><th>OUTSTANDING DEBT</th><th>ACTION</th></tr>'+rows+'</table></div></div>');
+}
+
 function addCustomer(){modal('ADD CUSTOMER','<div class="form-grid"><div class="field full"><label>NAME</label><input id="cn"></div><div class="field full"><label>PHONE</label><input id="cp"></div><div class="field full"><label>LOCATION</label><input id="cl"></div><div class="field full"><label>PREVIOUS OUTSTANDING DEBT (KSh)</label><input id="cd" type="number" value="0" placeholder="Enter old balance before this system"></div></div>','<button class="btn" onclick="closeModal()">CANCEL</button><button class="btn primary" onclick="saveCustomer()">SAVE CUSTOMER</button>')}
 function saveCustomer(){
   var prevDebt = +$('cd').value || 0;
@@ -549,7 +563,6 @@ function deleteRestock(idx){
   if(!confirm('Are you sure you want to delete this purchase entry? This will remove the recorded stock.')) return;
   var r = D.restocks[idx];
   
-  // Find product and reduce quantity
   for(var i=0; i<D.products.length; i++){
     if(D.products[i].name === r.product){
       if(r.stock > 0){
